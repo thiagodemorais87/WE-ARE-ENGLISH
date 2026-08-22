@@ -1,0 +1,1 @@
+export { VocabularyActivity } from './ReadingActivity'

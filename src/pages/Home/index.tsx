@@ -1,66 +1,55 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
-import { AnimatePresence } from 'motion/react'
-import { BrandLoader } from '@/components/layout/BrandLoader'
-import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
-import { Hero } from '@/components/sections/Hero'
-import { TodaysMessage } from '@/components/sections/TodaysMessage'
-import { MeetTeacher } from '@/components/sections/MeetTeacher'
-import { ExperienceStats } from '@/components/sections/ExperienceStats'
-import { Specialties } from '@/components/sections/Specialties'
-
-const LessonExperience = lazy(() =>
-  import('@/components/sections/LessonExperience').then((m) => ({
-    default: m.LessonExperience,
-  })),
-)
-const LearningPaths = lazy(() =>
-  import('@/components/sections/LearningPaths').then((m) => ({ default: m.LearningPaths })),
-)
-const PricingSection = lazy(() =>
-  import('@/components/sections/PricingSection').then((m) => ({
-    default: m.PricingSection,
-  })),
-)
-const TestimonialsSection = lazy(() =>
-  import('@/components/sections/TestimonialsSection').then((m) => ({
-    default: m.TestimonialsSection,
-  })),
-)
-const FinalCta = lazy(() =>
-  import('@/components/sections/FinalCta').then((m) => ({ default: m.FinalCta })),
-)
-
-function SectionFallback() {
-  return <div className="h-40 bg-sand" aria-hidden />
-}
+import { useEffect, useState } from 'react'
+import { PlatformHero } from '@/components/home/PlatformHero'
+import { SkillsSection } from '@/components/home/SkillsSection'
+import { HowItWorks } from '@/components/home/HowItWorks'
+import { ExploreCatalog } from '@/components/home/ExploreCatalog'
+import { ContinueLearning } from '@/components/home/ContinueLearning'
+import { GenerateChallenge } from '@/components/home/GenerateChallenge'
+import { useAuth } from '@/contexts/AuthContext'
+import { greetingForHour } from '@/lib/labels'
+import { fetchContinueLearning } from '@/services/activities/activity.service'
+import type { Activity } from '@/types/activity'
+import { FadeContent } from '@/components/motion/FadeContent'
+import { SplitText } from '@/components/motion/SplitText'
 
 export function HomePage() {
-  const [loading, setLoading] = useState(true)
-  const onDone = useCallback(() => setLoading(false), [])
+  const { isAuthenticated, user } = useAuth()
+  const [continueList, setContinueList] = useState<Activity[]>([])
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return
+    fetchContinueLearning(user.id).then(setContinueList)
+  }, [isAuthenticated, user])
 
   return (
-    <>
-      <AnimatePresence>{loading ? <BrandLoader onDone={onDone} /> : null}</AnimatePresence>
-
-      <div className={loading ? 'overflow-hidden h-dvh' : undefined}>
-        <Navbar />
-        <main>
-          <Hero />
-          <TodaysMessage />
-          <MeetTeacher />
-          <ExperienceStats />
-          <Specialties />
-          <Suspense fallback={<SectionFallback />}>
-            <LessonExperience />
-            <LearningPaths />
-            <PricingSection />
-            <TestimonialsSection />
-            <FinalCta />
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
-    </>
+    <div>
+      {isAuthenticated ? (
+        <section className="container-wide px-4 pb-4 pt-10 sm:px-6">
+          <SplitText
+            text={`${greetingForHour()}, ${user?.name.split(' ')[0] ?? 'there'}`}
+            className="text-2xl font-semibold text-sand sm:text-3xl"
+            as="p"
+          />
+          <FadeContent delay={0.1}>
+            <p className="mt-2 text-sand/65">Ready to practice English?</p>
+          </FadeContent>
+          <div className="mt-8 space-y-10">
+            <FadeContent delay={0.15}>
+              <ContinueLearning activities={continueList} />
+            </FadeContent>
+            <FadeContent delay={0.2}>
+              <GenerateChallenge />
+            </FadeContent>
+          </div>
+        </section>
+      ) : (
+        <>
+          <PlatformHero />
+          <SkillsSection />
+          <HowItWorks />
+        </>
+      )}
+      <ExploreCatalog />
+    </div>
   )
 }

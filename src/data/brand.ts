@@ -1,22 +1,11 @@
 export const brand = {
   name: 'WE ARE ENGLISH',
-  tagline: 'Professora Particular de Inglês',
-  heroTitle: ['INGLÊS PARTICULAR.', 'PRONÚNCIA REAL.', 'FALA COM CONFIANÇA.'],
+  tagline: 'Practice English. Your way.',
   heroSubtitle:
-    'Aulas particulares de inglês com foco em pronúncia, fluência e comunicação do dia a dia.',
-  authoritySeal: '15 ANOS EM NEW YORK',
-  location: 'SÃO PAULO, BRAZIL',
-  loadingLines: ['WE ARE ENGLISH', 'INGLÊS PARTICULAR', 'APRENDA. FALE. EVOLUA.'],
-  nav: [
-    { id: 'home', label: 'INÍCIO', href: '#home' },
-    { id: 'about', label: 'SOBRE', href: '#about' },
-    { id: 'experience', label: 'EXPERIÊNCIA', href: '#experience' },
-    { id: 'lessons', label: 'AULAS', href: '#lessons' },
-  ],
-  studentArea: { label: 'ÁREA DO ALUNO', href: '#cta' },
+    'Improve your English through interactive listening, writing, vocabulary, grammar, music, videos and games.',
   seo: {
-    title: 'WE ARE ENGLISH | Inglês Particular',
+    title: 'WE ARE ENGLISH | Practice English Your Way',
     description:
-      'Aulas particulares de inglês com foco em pronúncia, fluência e comunicação com confiança.',
+      'A modern platform to practice English through interactive activities — listening, writing, vocabulary, grammar, music, videos and games.',
   },
 } as const

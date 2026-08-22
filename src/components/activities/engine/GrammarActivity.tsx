@@ -1,0 +1,1 @@
+export { GrammarActivity } from './MultipleChoiceActivity'

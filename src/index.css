@@ -13,7 +13,7 @@
   --font-sans: "DM Sans", system-ui, sans-serif;
 
   --shadow-soft: 0 12px 40px rgb(17 17 17 / 0.08);
-  --shadow-lift: 0 18px 50px rgb(2 18 238 / 0.12);
+  --shadow-lift: 0 18px 50px rgb(2 18 238 / 0.18);
 }
 
 @layer base {
@@ -39,8 +39,8 @@
   body {
     margin: 0;
     min-width: 320px;
-    background: var(--color-sand);
-    color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-sand);
     font-family: var(--font-sans);
     font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
@@ -52,13 +52,23 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-cherry) 20%, transparent);
-    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-cherry) 35%, transparent);
+    color: white;
   }
 
   :focus-visible {
     outline: 2px solid var(--color-cobalt);
     outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-white outline-none transition placeholder:text-white/35 focus:border-cobalt/60;
+  }
+
+  .field-light {
+    @apply w-full rounded-xl border border-ink/12 bg-white px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-ink outline-none transition placeholder:text-muted focus:border-cobalt/50;
   }
 }
 
@@ -90,5 +100,20 @@
   .container-wide {
     width: min(100%, 1360px);
     margin-inline: auto;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  }
+
+  .bg-surface-light {
+    background-color: var(--color-sand);
+    color: var(--color-ink);
+  }
+
+  .bg-surface-dark {
+    background-color: var(--color-ink);
+    color: var(--color-sand);
   }
 }
