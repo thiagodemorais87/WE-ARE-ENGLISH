@@ -30,16 +30,16 @@ export function MatchingActivity({ activity, onComplete, onBack }: EngineActivit
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="font-medium text-white">{content.prompt}</p>
+      <p className="font-medium text-fg">{content.prompt}</p>
       <div className="mt-4 space-y-3">
         {pairs.map((p) => (
           <div key={p.left} className="flex flex-wrap items-center gap-3">
-            <span className="min-w-28 rounded-lg bg-white/10 px-3 py-2 text-sm text-white">{p.left}</span>
+            <span className="min-w-28 rounded-lg bg-panel-strong px-3 py-2 text-sm text-fg">{p.left}</span>
             <select
               disabled={checked}
               value={map[p.left] ?? ''}
               onChange={(e) => setMap((m) => ({ ...m, [p.left]: e.target.value }))}
-              className="rounded-lg border border-white/20 bg-ink px-3 py-2 text-sm text-white"
+              className="rounded-lg border border-white/20 bg-ink px-3 py-2 text-sm text-fg"
             >
               <option value="">Match…</option>
               {rights.map((r) => (

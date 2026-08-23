@@ -17,6 +17,13 @@ export const skillCategories: CategoryMeta[] = [
     icon: '🎧',
   },
   {
+    id: 'pronunciation',
+    label: 'Pronunciation',
+    type: 'pronunciation',
+    description: 'Listen, record yourself, and build clearer sounds and fluency.',
+    icon: '🎤',
+  },
+  {
     id: 'writing',
     label: 'Writing',
     type: 'writing',

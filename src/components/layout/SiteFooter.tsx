@@ -55,7 +55,7 @@ function FooterColumn({
             link.href === '#' ? (
               <a
                 href={link.href}
-                className={`text-sm transition hover:text-cherry ${dark ? 'text-white/55' : 'text-muted'}`}
+                className={`text-sm transition hover:text-cherry ${dark ? 'text-fg-muted' : 'text-muted'}`}
                 {...(link.href.startsWith('http')
                   ? { target: '_blank', rel: 'noreferrer' }
                   : {})}
@@ -65,7 +65,7 @@ function FooterColumn({
             ) : (
               <Link
                 to={link.href}
-                className={`text-sm transition hover:text-cherry ${dark ? 'text-white/55' : 'text-muted'}`}
+                className={`text-sm transition hover:text-cherry ${dark ? 'text-fg-muted' : 'text-muted'}`}
               >
                 {link.label}
               </Link>
@@ -83,7 +83,7 @@ export function SiteFooter({ variant = 'light' }: { variant?: 'light' | 'dark' }
     <footer
       className={
         dark
-          ? 'border-t border-white/10 bg-ink text-sand'
+          ? 'border-t border-edge bg-ink text-sand'
           : 'border-t border-ink/8 bg-sand text-ink'
       }
     >
@@ -93,7 +93,7 @@ export function SiteFooter({ variant = 'light' }: { variant?: 'light' | 'dark' }
             <span>WE ARE </span>
             <span className="text-cherry">ENGLISH</span>
           </Link>
-          <p className={`max-w-sm text-sm leading-relaxed ${dark ? 'text-white/55' : 'text-muted'}`}>
+          <p className={`max-w-sm text-sm leading-relaxed ${dark ? 'text-fg-muted' : 'text-muted'}`}>
             {footerData.blurb}
           </p>
           <p className={`text-sm font-semibold ${dark ? 'text-sand' : 'text-ink'}`}>
@@ -111,7 +111,7 @@ export function SiteFooter({ variant = 'light' }: { variant?: 'light' | 'dark' }
                 aria-label={social.label}
                 className={
                   dark
-                    ? 'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-sand transition hover:border-cherry/40 hover:text-cherry'
+                    ? 'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-panel text-sand transition hover:border-cherry/40 hover:text-cherry'
                     : 'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink/10 bg-white text-ink transition hover:border-cherry/40 hover:text-cherry'
                 }
               >
@@ -135,7 +135,7 @@ export function SiteFooter({ variant = 'light' }: { variant?: 'light' | 'dark' }
       <div
         className={
           dark
-            ? 'border-t border-white/10 px-4 py-5 text-center text-xs text-white/40 sm:px-6'
+            ? 'border-t border-edge px-4 py-5 text-center text-xs text-fg-muted sm:px-6'
             : 'border-t border-ink/8 px-4 py-5 text-center text-xs text-muted sm:px-6'
         }
       >

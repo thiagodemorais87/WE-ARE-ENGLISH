@@ -55,6 +55,26 @@ export const activities: Activity[] = [
       'Real-life English',
     ],
     categoryTags: ['trending', 'listening'],
+    instructions: 'Listen to the announcement, then answer the questions.',
+    content: {
+      audioText:
+        'Good morning passengers. Flight BA dual four two to London is now boarding at gate twelve. Please have your boarding pass and passport ready. Thank you for flying with us.',
+      transcript:
+        'Good morning passengers. Flight BA dual four two to London is now boarding at gate twelve. Please have your boarding pass and passport ready. Thank you for flying with us.',
+      questions: [
+        {
+          question: 'Where should passengers go?',
+          options: ['Gate 12', 'Gate 2', 'Baggage claim', 'The café'],
+          correctIndex: 0,
+          explanation: 'The announcement says boarding at gate twelve.',
+        },
+        {
+          question: 'What do passengers need ready?',
+          options: ['Boarding pass and passport', 'Only a ticket stub', 'Cash only', 'A suitcase key'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'weekend-email',
@@ -68,6 +88,13 @@ export const activities: Activity[] = [
     skills: ['Writing', 'Grammar'],
     practicePoints: ['Email structure', 'Past tense', 'Friendly tone'],
     categoryTags: ['trending', 'writing'],
+    content: {
+      prompt: 'Write a short email to a friend about your weekend plans (40–80 words).',
+      minWords: 40,
+      maxWords: 120,
+      taskType: 'short',
+      rubric: ['Greeting', 'Plans', 'Closing'],
+    },
   },
   {
     id: 'city-guide-reading',
@@ -81,6 +108,35 @@ export const activities: Activity[] = [
     skills: ['Reading', 'Vocabulary'],
     practicePoints: ['Skimming', 'Detail questions', 'Context clues'],
     categoryTags: ['reading'],
+    content: {
+      passage:
+        'Welcome to Riverside. Visit the old bridge in the morning, try local coffee near the market, and walk along the river at sunset. Museums are free on the first Sunday of each month.',
+      question: 'When are museums free?',
+      options: [
+        'The first Sunday of each month',
+        'Every Friday evening',
+        'Only in winter',
+        'Never',
+      ],
+      correctIndex: 0,
+      questions: [
+        {
+          question: 'When are museums free?',
+          options: [
+            'The first Sunday of each month',
+            'Every Friday evening',
+            'Only in winter',
+            'Never',
+          ],
+          correctIndex: 0,
+        },
+        {
+          question: 'What should you try near the market?',
+          options: ['Local coffee', 'Ski lessons', 'Boat engines', 'Airport taxis'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'present-perfect-lab',
@@ -94,6 +150,29 @@ export const activities: Activity[] = [
     skills: ['Grammar'],
     practicePoints: ['Have/has + past participle', 'Time expressions', 'Common mistakes'],
     categoryTags: ['grammar', 'trending'],
+    content: {
+      prompt: 'Choose the correct present perfect form.',
+      options: [
+        'I have visited Paris twice.',
+        'I has visited Paris twice.',
+        'I visit Paris twice.',
+        'I visiting Paris twice.',
+      ],
+      correctIndex: 0,
+      explanation: 'Use have/has + past participle.',
+      questions: [
+        {
+          question: 'Choose the correct sentence.',
+          options: [
+            'She has finished her homework.',
+            'She have finished her homework.',
+            'She finishing her homework.',
+            'She finish her homework yesterday already.',
+          ],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'travel-words',
@@ -107,45 +186,19 @@ export const activities: Activity[] = [
     skills: ['Vocabulary'],
     practicePoints: ['Airport words', 'Hotel phrases', 'Directions'],
     categoryTags: ['vocabulary', 'trending'],
-  },
-  {
-    id: 'feel-the-lyrics',
-    title: 'Feel the Lyrics',
-    description: 'Complete song lyrics and learn expressions through music.',
-    type: 'music',
-    level: 'B2',
-    difficulty: 'advanced',
-    duration: 15,
-    thumbnail: photos.music,
-    skills: ['Listening', 'Vocabulary'],
-    practicePoints: ['Lyrics cloze', 'Idioms', 'Pronunciation awareness'],
-    categoryTags: ['music', 'trending'],
-  },
-  {
-    id: 'workday-vlog',
-    title: 'Workday Vlog',
-    description: 'Watch a short vlog and answer questions about the speaker.',
-    type: 'video',
-    level: 'B1',
-    difficulty: 'intermediate',
-    duration: 12,
-    thumbnail: photos.office,
-    skills: ['Listening', 'Comprehension'],
-    practicePoints: ['Main idea', 'Details', 'Everyday speech'],
-    categoryTags: ['videos', 'trending'],
-  },
-  {
-    id: 'quick-quiz-arena',
-    title: 'Quick Quiz Arena',
-    description: 'Fast-paced English trivia across vocabulary and grammar.',
-    type: 'game',
-    level: 'A2',
-    difficulty: 'basic',
-    duration: 5,
-    thumbnail: photos.game,
-    skills: ['Vocabulary', 'Grammar'],
-    practicePoints: ['Speed recall', 'Common errors', 'Fun competition'],
-    categoryTags: ['games', 'trending'],
+    content: {
+      word: 'boarding pass',
+      question: 'What do you show at the gate before you get on the plane?',
+      options: ['Boarding pass', 'Menu', 'Receipt only', 'Umbrella'],
+      correctIndex: 0,
+      questions: [
+        {
+          question: 'A place to sleep when you travel is a…',
+          options: ['hotel', 'passport', 'gate', 'ticket'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'cafe-order',
@@ -159,6 +212,25 @@ export const activities: Activity[] = [
     skills: ['Listening'],
     practicePoints: ['Food vocabulary', 'Polite requests'],
     categoryTags: ['listening'],
+    instructions: 'Listen, then choose the correct order.',
+    content: {
+      audioText:
+        "I'd like a large coffee and a banana muffin, please. No sugar, thank you.",
+      transcript:
+        "I'd like a large coffee and a banana muffin, please. No sugar, thank you.",
+      questions: [
+        {
+          question: 'What size coffee did the customer want?',
+          options: ['Large', 'Small', 'Medium', 'No coffee'],
+          correctIndex: 0,
+        },
+        {
+          question: 'What else did they order?',
+          options: ['A banana muffin', 'A sandwich', 'Tea', 'Water only'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'opinion-paragraph',
@@ -172,6 +244,13 @@ export const activities: Activity[] = [
     skills: ['Writing', 'Structure'],
     practicePoints: ['Opinion phrases', 'Linking words', 'Paragraph unity'],
     categoryTags: ['writing'],
+    content: {
+      prompt: 'Write a short paragraph giving your opinion on remote work (60–120 words).',
+      minWords: 60,
+      maxWords: 150,
+      taskType: 'essay',
+      rubric: ['Clear opinion', 'Supporting reasons', 'Linking words'],
+    },
   },
   {
     id: 'news-snippet',
@@ -185,6 +264,25 @@ export const activities: Activity[] = [
     skills: ['Reading'],
     practicePoints: ['Fact vs opinion', 'Headline meaning'],
     categoryTags: ['reading'],
+    content: {
+      passage:
+        'City officials opened a new riverside park on Monday. The project cost two million dollars and includes bike paths, picnic areas, and free Wi-Fi. Local residents say the park will improve weekend tourism.',
+      question: 'When did the park open?',
+      options: ['Monday', 'Friday', 'Last year only', 'Never'],
+      correctIndex: 0,
+      questions: [
+        {
+          question: 'When did the park open?',
+          options: ['Monday', 'Friday', 'Last year only', 'Never'],
+          correctIndex: 0,
+        },
+        {
+          question: 'What is included in the park?',
+          options: ['Bike paths and picnic areas', 'An airport', 'A stadium only', 'A shopping mall'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'conditionals-challenge',
@@ -198,6 +296,28 @@ export const activities: Activity[] = [
     skills: ['Grammar'],
     practicePoints: ['Zero/first/second conditional'],
     categoryTags: ['grammar'],
+    content: {
+      prompt: 'Choose the correct conditional.',
+      options: [
+        'If it rains, we will stay inside.',
+        'If it rains, we stay will inside.',
+        'If it will rain, we stay inside.',
+        'If rains it, we will stay.',
+      ],
+      correctIndex: 0,
+      questions: [
+        {
+          question: 'Which sentence is correct?',
+          options: [
+            'If I were you, I would study more.',
+            'If I was you, I will study more.',
+            'If I am you, I study more.',
+            'If I be you, I studied more.',
+          ],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
   {
     id: 'phrasal-verbs-pack',
@@ -211,45 +331,19 @@ export const activities: Activity[] = [
     skills: ['Vocabulary'],
     practicePoints: ['Common phrasal verbs', 'Context usage'],
     categoryTags: ['vocabulary'],
-  },
-  {
-    id: 'chorus-fill',
-    title: 'Chorus Fill-In',
-    description: 'Fill in missing words from a popular chorus.',
-    type: 'music',
-    level: 'A2',
-    difficulty: 'basic',
-    duration: 8,
-    thumbnail: photos.concert,
-    skills: ['Listening', 'Vocabulary'],
-    practicePoints: ['Rhymes', 'Common verbs'],
-    categoryTags: ['music'],
-  },
-  {
-    id: 'interview-clip',
-    title: 'Interview Clip',
-    description: 'Watch an interview excerpt and answer follow-up questions.',
-    type: 'video',
-    level: 'C1',
-    difficulty: 'advanced',
-    duration: 15,
-    thumbnail: photos.interview,
-    skills: ['Listening', 'Vocabulary'],
-    practicePoints: ['Nuance', 'Paraphrase'],
-    categoryTags: ['videos'],
-  },
-  {
-    id: 'grammar-duel',
-    title: 'Grammar Duel',
-    description: 'Compete in a timed grammar challenge.',
-    type: 'game',
-    level: 'B1',
-    difficulty: 'intermediate',
-    duration: 8,
-    thumbnail: photos.duel,
-    skills: ['Grammar'],
-    practicePoints: ['Accuracy under pressure'],
-    categoryTags: ['games'],
+    content: {
+      word: 'give up',
+      question: 'What does “give up” usually mean?',
+      options: ['Stop trying', 'Start running', 'Buy something', 'Wake up'],
+      correctIndex: 0,
+      questions: [
+        {
+          question: '“Look after” means…',
+          options: ['Take care of', 'Look for keys only', 'Look up a word', 'Look away'],
+          correctIndex: 0,
+        },
+      ],
+    },
   },
 ]
 

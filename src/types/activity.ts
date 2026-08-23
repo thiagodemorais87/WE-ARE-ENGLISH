@@ -54,9 +54,19 @@ export interface TrueFalseContent {
   audioText?: string
 }
 
+export interface FillBlankItem {
+  id: string
+  sentence: string
+  answer: string
+  alternatives?: string[]
+}
+
 export interface FillBlankContent {
-  text: string
-  blanks: { id: string; answer: string }[]
+  /** Legacy single-passage mode */
+  text?: string
+  blanks?: { id: string; answer: string; alternatives?: string[] }[]
+  /** Cambridge-style: 10 sentences with one gap each */
+  items?: FillBlankItem[]
   explanation?: string
   audioText?: string
 }
@@ -163,9 +173,30 @@ export interface MediaQuizContent {
   correctIndex?: number
 }
 
+export interface InteractiveVideoGlossaryEntry {
+  meaning: string
+  pronunciation?: string
+  kind?: 'explain' | 'meaning' | 'sound'
+}
+
+export interface InteractiveVideoContent {
+  mode: 'interactive'
+  embedUrl: string
+  transcript: TranscriptLine[]
+  glossary: Record<string, InteractiveVideoGlossaryEntry>
+  gap: {
+    sentence: string
+    options: string[]
+    correctIndex: number
+    explanation?: string
+  }
+}
+
 export interface PronunciationContent {
   text: string
   tips?: string
+  /** Sound or pattern focus, e.g. "TH sound" */
+  focus?: string
 }
 
 export type ActivityContent =
@@ -181,6 +212,7 @@ export type ActivityContent =
   | VocabularyContent
   | GrammarContent
   | PronunciationContent
+  | InteractiveVideoContent
   | Record<string, unknown>
 
 export interface Activity {

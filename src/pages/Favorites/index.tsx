@@ -12,7 +12,7 @@ export function FavoritesPage() {
 
   return (
     <div className="container-wide space-y-8 px-4 py-10 sm:px-6">
-      <h1 className="display text-4xl text-white sm:text-5xl">Your Favorite Activities</h1>
+      <h1 className="display text-4xl text-fg sm:text-5xl">Your Favorite Activities</h1>
       {items.length ? (
         <div className="flex flex-wrap gap-4">
           {items.map((activity) => (
@@ -20,7 +20,7 @@ export function FavoritesPage() {
           ))}
         </div>
       ) : (
-        <p className="text-white/50">No favorites yet. Heart an activity from its detail page.</p>
+        <p className="text-fg-muted">No favorites yet. Heart an activity from its detail page.</p>
       )}
     </div>
   )

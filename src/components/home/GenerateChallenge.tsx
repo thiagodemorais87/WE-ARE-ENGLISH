@@ -14,6 +14,9 @@ const skills: ActivityType[] = [
   'game',
 ]
 
+const darkField =
+  'w-full rounded-xl border border-white/20 bg-ink/40 px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cobalt/60'
+
 export function GenerateChallenge() {
   const navigate = useNavigate()
   const [skill, setSkill] = useState<ActivityType>('listening')
@@ -45,15 +48,15 @@ export function GenerateChallenge() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/12 bg-graphite p-6 sm:p-8">
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-graphite p-6 sm:p-8">
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(210,0,1,0.32),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(2,18,238,0.38),transparent_50%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(210,0,1,0.32),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgb(2,18,238,0.38),transparent_50%)]"
         aria-hidden
       />
       <div className="relative">
-        <p className="text-sm font-semibold text-soft-pink">✨ Create a Practice Session</p>
+        <p className="text-sm font-semibold text-soft-pink">Create a Practice Session</p>
         <h2 className="mt-2 display text-3xl text-white sm:text-4xl">Generate a challenge</h2>
-        <p className="mt-2 max-w-xl text-sm text-white/75">
+        <p className="mt-2 max-w-xl text-sm text-white/70">
           Pick your focus and we will prepare a mock session. Real AI generation can plug in later.
         </p>
 
@@ -62,7 +65,7 @@ export function GenerateChallenge() {
             <select
               value={skill}
               onChange={(e) => setSkill(e.target.value as ActivityType)}
-              className="field"
+              className={darkField}
             >
               {skills.map((s) => (
                 <option key={s} value={s} className="bg-ink text-sand">
@@ -75,7 +78,7 @@ export function GenerateChallenge() {
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value as CefrLevel)}
-              className="field"
+              className={darkField}
             >
               {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((l) => (
                 <option key={l} value={l} className="bg-ink text-sand">
@@ -88,7 +91,7 @@ export function GenerateChallenge() {
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="field"
+              className={darkField}
               placeholder="Travel"
             />
           </Field>
@@ -96,7 +99,7 @@ export function GenerateChallenge() {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-              className="field"
+              className={darkField}
             >
               <option value="basic" className="bg-ink text-sand">
                 Basic
@@ -113,7 +116,7 @@ export function GenerateChallenge() {
             <select
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="field"
+              className={darkField}
             >
               <option value={5} className="bg-ink text-sand">
                 5 min

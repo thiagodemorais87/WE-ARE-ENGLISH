@@ -8,7 +8,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   if (loading) {
-    return <div className="px-4 py-16 text-center text-white/50">Loading…</div>
+    return <div className="px-4 py-16 text-center text-fg-muted">Loading…</div>
   }
 
   if (!isAuthenticated) {
@@ -24,7 +24,7 @@ export function TeacherRoute({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   if (loading) {
-    return <div className="px-4 py-16 text-center text-white/50">Loading…</div>
+    return <div className="px-4 py-16 text-center text-fg-muted">Loading…</div>
   }
 
   if (!isAuthenticated) {

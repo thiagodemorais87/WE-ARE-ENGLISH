@@ -93,11 +93,11 @@ export function MultiQuestionQuiz({
     >
       {header}
       {q.passage ? (
-        <p className="mb-4 whitespace-pre-wrap rounded-xl bg-white/5 p-4 text-sm text-white/80">
+        <p className="mb-4 whitespace-pre-wrap rounded-xl bg-panel p-4 text-sm text-fg/80">
           {q.passage}
         </p>
       ) : null}
-      <p className="font-medium text-white">{q.question}</p>
+      <p className="font-medium text-fg">{q.question}</p>
       <ChoiceList
         options={q.options}
         value={selected}
@@ -134,8 +134,8 @@ export function MultiQuestionQuiz({
   )
 }
 
-/** Known dead / non-embeddable IDs previously used in seeds */
-const BROKEN_YOUTUBE_IDS = new Set(['yCQOj2LQ1to', '0VsyckzBTfE', 'rfscVS0vtbw'])
+/** Known dead / non-embeddable IDs previously used in seeds (includes live streams) */
+const BROKEN_YOUTUBE_IDS = new Set(['yCQOj2LQ1to', '0VsyckzBTfE', 'rfscVS0vtbw', 'jfKfPfyJRdk'])
 
 const SAFE_YOUTUBE_FALLBACK = 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE?rel=0&modestbranding=1'
 

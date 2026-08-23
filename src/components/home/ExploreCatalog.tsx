@@ -12,8 +12,24 @@ import { GameCard } from '@/components/activities/GameCard'
 import { FadeContent } from '@/components/motion/FadeContent'
 import { BlurText } from '@/components/motion/BlurText'
 
+function catalogKey(a: Activity): string {
+  return `${a.type}:${a.title.trim().toLowerCase()}`
+}
+
+function dedupedLocalCatalog(): Activity[] {
+  const byKey = new Map<string, Activity>()
+  for (const a of [...mockCatalog, ...systemSeedActivities]) {
+    const key = catalogKey(a)
+    const existing = byKey.get(key)
+    if (!existing || a.id.startsWith('sys-')) {
+      byKey.set(key, a)
+    }
+  }
+  return [...byKey.values()]
+}
+
 function localByCategory(categoryId: string): Activity[] {
-  const all = [...systemSeedActivities, ...mockCatalog]
+  const all = dedupedLocalCatalog()
   if (categoryId === 'trending') return all.slice(0, 12)
   const skill: ActivityType =
     categoryId === 'videos' ? 'video' : categoryId === 'games' ? 'game' : (categoryId as ActivityType)
@@ -57,16 +73,16 @@ export function ExploreCatalog() {
   }, [])
 
   return (
-    <section id="explore" className="bg-ink text-sand">
+    <section id="explore" className="bg-surface text-fg">
       <div className="container-wide space-y-10 px-4 py-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <BlurText
               text="Explore our activities"
-              className="display text-3xl text-white sm:text-4xl"
+              className="display text-3xl text-fg sm:text-4xl"
               as="h2"
             />
-            <p className="mt-2 text-white/55">
+            <p className="mt-2 text-fg-muted">
               {isAuthenticated
                 ? 'Pick a category and start practicing.'
                 : 'Preview the catalog — create an account to unlock activities.'}
@@ -86,7 +102,7 @@ export function ExploreCatalog() {
         ))}
 
         <FadeContent className="space-y-4 pt-4">
-          <h2 className="text-xl font-semibold text-white">Interactive Games</h2>
+          <h2 className="text-xl font-semibold text-fg">Interactive Games</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((game) => (
               <GameCard

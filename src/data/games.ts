@@ -26,7 +26,7 @@ export const games: GameItem[] = [
     title: 'Grammar Challenge',
     description: 'Timed grammar battles.',
     thumbnail:
-      'https://images.unsplash.com/photo-1456513086600-3a0f6d0e8f1c?w=800&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80&auto=format&fit=crop',
     players: 'Solo',
     provider: 'internal',
     activityId: 'sys-game-grammar-duel',

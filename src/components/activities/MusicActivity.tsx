@@ -6,10 +6,14 @@ import {
   useQuiz,
 } from '@/components/activities/ActivityPlayer'
 import { MultiQuestionQuiz, youtubeEmbedUrl, type QuizQuestion } from '@/components/activities/engine/MultiQuestionQuiz'
+import {
+  InteractiveVideoListening,
+  isInteractiveVideoContent,
+} from '@/components/activities/engine/InteractiveVideoListening'
 import type { EngineActivityProps } from '@/components/activities/engine/types'
 import type { MediaQuizContent } from '@/types/activity'
 
-const DEFAULT_MUSIC_EMBED = 'https://www.youtube-nocookie.com/embed/jfKfPfyJRdk'
+const DEFAULT_MUSIC_EMBED = 'https://www.youtube-nocookie.com/embed/e-ORhEE9VVg'
 const DEFAULT_VIDEO_EMBED = 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE'
 
 function mediaQuestions(content: MediaQuizContent, fallback: QuizQuestion[]): QuizQuestion[] {
@@ -94,17 +98,21 @@ export function MusicActivity({ activity, onComplete, onBack }: EngineActivityPr
       activity={activity}
       questions={questions}
       onComplete={onComplete}
-      onBack={onBack ?? (() => navigate(-1))}
+      onBack={onBack ?? (() => navigate(`/activity/${activity.id}`))}
       header={
-        <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-edge bg-black/40">
           <iframe
             title={activity.title}
             src={embed}
             className="aspect-video w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="lazy"
           />
-          <p className="p-3 text-xs text-white/45">Music practice · YouTube embed</p>
+          <p className="p-3 text-xs text-fg-muted">
+            Music practice · If the player stays blank, check your network or try another browser.
+          </p>
         </div>
       }
     />
@@ -113,6 +121,17 @@ export function MusicActivity({ activity, onComplete, onBack }: EngineActivityPr
 
 export function VideoActivity({ activity, onComplete, onBack }: EngineActivityProps) {
   const navigate = useNavigate()
+
+  if (isInteractiveVideoContent(activity.content)) {
+    return (
+      <InteractiveVideoListening
+        activity={activity}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    )
+  }
+
   const content = (activity.content ?? {}) as MediaQuizContent
   const embed = youtubeEmbedUrl(content.embedUrl, DEFAULT_VIDEO_EMBED)
   const questions = mediaQuestions(content, [
@@ -173,17 +192,21 @@ export function VideoActivity({ activity, onComplete, onBack }: EngineActivityPr
       activity={activity}
       questions={questions}
       onComplete={onComplete}
-      onBack={onBack ?? (() => navigate(-1))}
+      onBack={onBack ?? (() => navigate(`/activity/${activity.id}`))}
       header={
-        <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-edge bg-black/40">
           <iframe
             title={activity.title}
             src={embed}
             className="aspect-video w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="lazy"
           />
-          <p className="p-3 text-xs text-white/45">Video practice · YouTube embed</p>
+          <p className="p-3 text-xs text-fg-muted">
+            Video practice · If the player stays blank, check your network or try another browser.
+          </p>
         </div>
       }
     />
@@ -201,7 +224,7 @@ export function SimpleGameQuiz({ activity, onComplete, onBack }: EngineActivityP
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="text-lg font-medium text-white">Quick check</p>
+      <p className="text-lg font-medium text-fg">Quick check</p>
       <ChoiceList
         options={['Practice makes progress', 'Never practice', 'Delete English', 'Skip forever']}
         value={quiz.selected}

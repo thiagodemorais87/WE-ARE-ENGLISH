@@ -15,12 +15,12 @@ export function ActivityEditPage() {
   }, [id])
 
   if (!activity) {
-    return <div className="px-4 py-16 text-center text-white/50">Loading…</div>
+    return <div className="px-4 py-16 text-center text-fg-muted">Loading…</div>
   }
 
   if (activity.isSystem) {
     return (
-      <div className="container-wide px-4 py-12 text-white">
+      <div className="container-wide px-4 py-12 text-fg">
         <p>System activities cannot be edited. Duplicate them instead.</p>
         <Link to="/admin/activities" className="mt-4 inline-block text-soft-pink">
           ← Back
@@ -31,10 +31,10 @@ export function ActivityEditPage() {
 
   return (
     <div className="container-wide px-4 py-8 sm:px-6 sm:py-12">
-      <Link to="/admin/activities" className="text-sm text-white/50 hover:text-white">
+      <Link to="/admin/activities" className="text-sm text-fg-muted hover:text-fg">
         ← Back
       </Link>
-      <h1 className="mt-4 font-display text-3xl text-white">Edit activity</h1>
+      <h1 className="mt-4 font-display text-3xl text-fg">Edit activity</h1>
       <div className="mt-8">
         <ActivityForm
           initial={activity}

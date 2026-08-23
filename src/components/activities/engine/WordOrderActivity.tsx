@@ -54,7 +54,7 @@ export function WordOrderActivity({ activity, onComplete, onBack }: EngineActivi
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="font-medium text-white">{content.prompt}</p>
+      <p className="font-medium text-fg">{content.prompt}</p>
       <div className="mt-4 flex min-h-14 flex-wrap gap-2 rounded-xl border border-dashed border-white/20 p-3">
         {ordered.map((w, i) => (
           <button key={`o-${i}-${w}`} type="button" onClick={() => pick(w, false)} className="rounded-lg bg-cherry/80 px-3 py-1.5 text-sm text-white">
@@ -64,7 +64,7 @@ export function WordOrderActivity({ activity, onComplete, onBack }: EngineActivi
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {pool.map((w, i) => (
-          <button key={`p-${i}-${w}`} type="button" onClick={() => pick(w, true)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80">
+          <button key={`p-${i}-${w}`} type="button" onClick={() => pick(w, true)} className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-fg/80">
             {w}
           </button>
         ))}

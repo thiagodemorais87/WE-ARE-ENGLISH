@@ -18,12 +18,28 @@ export type ActivityFilters = {
   createdBy?: string
 }
 
+function catalogKey(a: Activity): string {
+  return `${a.type}:${a.title.trim().toLowerCase()}`
+}
+
+/** Prefer system seeds (sys-*) when type+title collide; skip hollow mock entries. */
 function localCatalog(): Activity[] {
-  const byId = new Map<string, Activity>()
-  for (const a of [...systemSeedActivities, ...mockCatalog]) {
-    byId.set(a.id, a)
+  const byKey = new Map<string, Activity>()
+  const mocks = mockCatalog.filter((a) => {
+    if (a.type === 'listening' || a.type === 'reading') {
+      const c = a.content as Record<string, unknown> | undefined
+      return Boolean(c && (c.audioText || c.transcript || c.passage || c.text || c.questions))
+    }
+    return true
+  })
+  for (const a of [...mocks, ...systemSeedActivities]) {
+    const key = catalogKey(a)
+    const existing = byKey.get(key)
+    if (!existing || a.id.startsWith('sys-')) {
+      byKey.set(key, a)
+    }
   }
-  return [...byId.values()]
+  return [...byKey.values()]
 }
 
 function filterLocal(list: Activity[], filters: ActivityFilters): Activity[] {
@@ -75,11 +91,11 @@ function mergeWithLocalSeeds(fromDb: Activity[], filters: ActivityFilters): Acti
 
   const byKey = new Map<string, Activity>()
   for (const a of fromDb) {
-    byKey.set(`${a.type}:${a.title}:${a.level}`, a)
+    byKey.set(catalogKey(a), a)
     byKey.set(a.id, a)
   }
   for (const a of local) {
-    const key = `${a.type}:${a.title}:${a.level}`
+    const key = catalogKey(a)
     if (!byKey.has(key) && !byKey.has(a.id)) {
       byKey.set(key, a)
     }

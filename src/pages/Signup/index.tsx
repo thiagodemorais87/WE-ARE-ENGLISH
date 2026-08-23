@@ -39,10 +39,10 @@ export function SignupPage() {
       <FadeContent className="w-full max-w-md">
         <form
           onSubmit={onSubmit}
-          className="space-y-5 rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-soft"
+          className="space-y-5 rounded-3xl border border-edge bg-panel p-8 shadow-soft"
         >
           <div>
-            <p className="display text-3xl text-sand">{brand.name}</p>
+            <p className="display text-3xl text-ink">{brand.name}</p>
             <BlurText
               text="Create your account"
               className="mt-2 text-xl font-semibold text-cherry"
@@ -67,7 +67,7 @@ export function SignupPage() {
               ).map(([label, value, setter, type]) => (
                 <label
                   key={label}
-                  className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-white/50"
+                  className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-fg-muted"
                 >
                   {label}
                   <input
@@ -92,7 +92,7 @@ export function SignupPage() {
             </>
           )}
 
-          <p className="text-center text-sm text-white/45">
+          <p className="text-center text-sm text-fg-muted">
             Already have an account?{' '}
             <Link to="/login" className="font-semibold text-cherry hover:underline">
               Sign in

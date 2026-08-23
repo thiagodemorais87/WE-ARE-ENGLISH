@@ -12,7 +12,7 @@ export function ActivityCarousel({ title, activities, action }: Props) {
   return (
     <section className="space-y-3">
       <div className="flex items-end justify-between gap-4 px-1">
-        <h2 className="text-lg font-semibold text-white sm:text-xl">{title}</h2>
+        <h2 className="text-lg font-semibold text-fg sm:text-xl">{title}</h2>
         {action}
       </div>
       {activities.length ? (
@@ -24,7 +24,7 @@ export function ActivityCarousel({ title, activities, action }: Props) {
           ))}
         </div>
       ) : (
-        <p className="px-1 text-sm text-white/45">No activities in this category yet.</p>
+        <p className="px-1 text-sm text-fg-muted">No activities in this category yet.</p>
       )}
     </section>
   )

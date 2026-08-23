@@ -19,11 +19,11 @@ export function WritingActivity({ activity }: { activity: Activity }) {
 
   return (
     <ActivityPlayer activity={activity} step={1} totalSteps={1}>
-      <p className="text-lg font-medium text-white">✍️ Writing Challenge</p>
-      <p className="mt-2 text-white/60">
+      <p className="text-lg font-medium text-fg">✍️ Writing Challenge</p>
+      <p className="mt-2 text-fg-muted">
         Write a short email to your friend about your weekend.
       </p>
-      <p className="mt-1 text-sm text-white/40">Minimum: 50 words</p>
+      <p className="mt-1 text-sm text-fg-muted">Minimum: 50 words</p>
 
       {!scores ? (
         <>
@@ -34,7 +34,7 @@ export function WritingActivity({ activity }: { activity: Activity }) {
             className="field mt-4 resize-y"
             placeholder="Hi Sam, this weekend I..."
           />
-          <p className="mt-2 text-xs text-white/45">
+          <p className="mt-2 text-xs text-fg-muted">
             {words} / 50 words
           </p>
           <button
@@ -48,7 +48,7 @@ export function WritingActivity({ activity }: { activity: Activity }) {
         </>
       ) : (
         <div className="mt-6 space-y-4">
-          <p className="text-white">Your answer has been submitted.</p>
+          <p className="text-fg">Your answer has been submitted.</p>
           {(
             [
               ['Grammar', scores.grammar],
@@ -64,7 +64,7 @@ export function WritingActivity({ activity }: { activity: Activity }) {
               <ProgressBar value={value} barClassName="bg-cobalt" />
             </div>
           ))}
-          <p className="text-sm text-white/55">{scores.feedback}</p>
+          <p className="text-sm text-fg-muted">{scores.feedback}</p>
         </div>
       )}
     </ActivityPlayer>

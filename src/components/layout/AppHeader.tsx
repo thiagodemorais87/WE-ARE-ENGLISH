@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePlatform } from '@/contexts/PlatformContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { brand } from '@/data/brand'
 import { SearchActivities } from '@/components/activities/SearchActivities'
 
-const guestLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/#explore', label: 'Explore' },
-]
+const guestLinks = [{ to: '/', label: 'Home' }]
 
 const authLinks = [
   { to: '/', label: 'Home' },
@@ -17,13 +14,9 @@ const authLinks = [
   { to: '/favorites', label: 'Favorites' },
 ]
 
-type Props = {
-  light?: boolean
-}
-
-export function AppHeader({ light = false }: Props) {
+export function AppHeader() {
   const { isAuthenticated, user } = useAuth()
-  const { cartPacks } = usePlatform()
+  const { isLight, toggleTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
@@ -44,21 +37,9 @@ export function AppHeader({ light = false }: Props) {
   }
 
   return (
-    <header
-      className={[
-        'sticky top-0 z-50 border-b backdrop-blur-xl',
-        light
-          ? 'border-ink/8 bg-sand/90 text-ink'
-          : 'border-white/8 bg-ink/90 text-sand',
-      ].join(' ')}
-    >
+    <header className="sticky top-0 z-50 border-b border-edge bg-header text-fg backdrop-blur-xl">
       <div className="container-wide flex items-center gap-4 px-4 py-3 sm:px-6">
-        <Link
-          to="/"
-          className={['display shrink-0 text-xl sm:text-2xl', light ? 'text-ink' : 'text-white'].join(
-            ' ',
-          )}
-        >
+        <Link to="/" className="display shrink-0 text-xl text-fg sm:text-2xl">
           {brand.name}
         </Link>
 
@@ -70,13 +51,9 @@ export function AppHeader({ light = false }: Props) {
               className={({ isActive }) =>
                 [
                   'rounded-full px-3 py-1.5 text-sm font-medium transition',
-                  isActive && link.to !== '/#explore'
-                    ? light
-                      ? 'bg-ink/8 text-ink'
-                      : 'bg-white/10 text-white'
-                    : light
-                      ? 'text-muted hover:text-ink'
-                      : 'text-white/60 hover:text-white',
+                  isActive
+                    ? 'bg-panel-strong text-fg'
+                    : 'text-fg-muted hover:text-fg',
                 ].join(' ')
               }
               end={link.to === '/'}
@@ -93,26 +70,19 @@ export function AppHeader({ light = false }: Props) {
             className="hidden w-44 xl:block xl:w-56"
           />
 
-          <Link
-            to={isAuthenticated ? '/cart' : '/signup'}
-            className={[
-              'relative rounded-full p-2 text-lg hover:bg-black/5',
-              light ? 'text-ink/80' : 'text-white/80 hover:bg-white/10',
-            ].join(' ')}
-            aria-label="Cart"
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="rounded-full border border-edge bg-panel px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-fg hover:bg-panel-strong"
+            aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
           >
-            🛒
-            {isAuthenticated && cartPacks.length > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cherry px-1 text-[10px] font-bold text-white">
-                {cartPacks.length}
-              </span>
-            )}
-          </Link>
+            {isLight ? 'Dark' : 'Light'}
+          </button>
 
           {isAuthenticated ? (
             <Link
               to="/profile"
-              className="hidden rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 sm:inline-flex"
+              className="hidden rounded-full bg-panel-strong px-3 py-1.5 text-sm font-medium text-fg hover:bg-panel sm:inline-flex"
             >
               {user?.name?.split(' ')[0] ?? 'Profile'}
             </Link>
@@ -120,10 +90,7 @@ export function AppHeader({ light = false }: Props) {
             <div className="hidden items-center gap-2 sm:flex">
               <Link
                 to="/login"
-                className={[
-                  'rounded-full px-3 py-1.5 text-sm font-medium',
-                  light ? 'text-muted hover:text-ink' : 'text-white/70 hover:text-white',
-                ].join(' ')}
+                className="rounded-full px-3 py-1.5 text-sm font-medium text-fg-muted hover:text-fg"
               >
                 Sign In
               </Link>
@@ -138,7 +105,7 @@ export function AppHeader({ light = false }: Props) {
 
           <button
             type="button"
-            className={['rounded-full p-2 lg:hidden', light ? 'text-ink' : 'text-white'].join(' ')}
+            className="rounded-full p-2 text-fg lg:hidden"
             aria-label="Menu"
             onClick={() => setOpen(true)}
           >
@@ -155,21 +122,10 @@ export function AppHeader({ light = false }: Props) {
             aria-label="Close menu"
             onClick={() => setOpen(false)}
           />
-          <div
-            className={[
-              'absolute right-0 top-0 flex h-full w-[min(100%,320px)] flex-col gap-2 p-5 shadow-lift',
-              light ? 'bg-sand text-ink' : 'bg-graphite text-white',
-            ].join(' ')}
-          >
+          <div className="absolute right-0 top-0 flex h-full w-[min(100%,320px)] flex-col gap-2 bg-surface p-5 text-fg shadow-lift">
             <div className="mb-4 flex items-center justify-between">
-              <span className={['display text-xl', light ? 'text-ink' : 'text-white'].join(' ')}>
-                {brand.name}
-              </span>
-              <button
-                type="button"
-                className={light ? 'text-ink' : 'text-white'}
-                onClick={() => setOpen(false)}
-              >
+              <span className="display text-xl text-fg">{brand.name}</span>
+              <button type="button" className="text-fg" onClick={() => setOpen(false)}>
                 ✕
               </button>
             </div>
@@ -179,39 +135,35 @@ export function AppHeader({ light = false }: Props) {
                 key={link.to}
                 to={link.to}
                 onClick={() => setOpen(false)}
-                className={[
-                  'rounded-xl px-3 py-3',
-                  light ? 'hover:bg-ink/5' : 'hover:bg-white/5',
-                ].join(' ')}
+                className="rounded-xl px-3 py-3 hover:bg-panel"
               >
                 {link.label}
               </Link>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                toggleTheme()
+                setOpen(false)
+              }}
+              className="rounded-xl px-3 py-3 text-left hover:bg-panel"
+            >
+              {isLight ? 'Dark mode' : 'Light mode'}
+            </button>
             {isAuthenticated ? (
-              <>
-                <Link
-                  to="/profile"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-3 hover:bg-white/5"
-                >
-                  Profile
-                </Link>
-                <Link
-                  to="/cart"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-3 hover:bg-white/5"
-                >
-                  Cart
-                </Link>
-              </>
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="rounded-xl px-3 py-3 hover:bg-panel"
+              >
+                Profile
+              </Link>
             ) : (
               <>
                 <Link
                   to="/login"
                   onClick={() => setOpen(false)}
-                  className={['rounded-xl px-3 py-3', light ? 'hover:bg-ink/5' : 'hover:bg-white/5'].join(
-                    ' ',
-                  )}
+                  className="rounded-xl px-3 py-3 hover:bg-panel"
                 >
                   Sign In
                 </Link>

@@ -73,7 +73,7 @@ export function AdminActivitiesPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-soft-pink">Teacher</p>
-          <h1 className="font-display text-3xl text-white sm:text-4xl">Activities</h1>
+          <h1 className="font-display text-3xl text-fg sm:text-4xl">Activities</h1>
         </div>
         <Link
           to="/admin/activities/new"
@@ -94,9 +94,9 @@ export function AdminActivitiesPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by title…"
-          className="flex-1 rounded-full border border-white/15 bg-ink/50 px-4 py-2 text-white"
+          className="flex-1 rounded-full border border-edge bg-ink/50 px-4 py-2 text-fg"
         />
-        <button type="submit" className="rounded-full border border-white/20 px-4 py-2 text-sm text-white">
+        <button type="submit" className="rounded-full border border-white/20 px-4 py-2 text-sm text-fg">
           Search
         </button>
       </form>
@@ -104,8 +104,8 @@ export function AdminActivitiesPage() {
       {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
 
       <div className="mt-6 overflow-x-auto">
-        <table className="w-full min-w-[40rem] text-left text-sm text-white/80">
-          <thead className="text-xs uppercase text-white/45">
+        <table className="w-full min-w-[40rem] text-left text-sm text-fg/80">
+          <thead className="text-xs uppercase text-fg-muted">
             <tr>
               <th className="py-2 pr-3">Title</th>
               <th className="py-2 pr-3">Type</th>
@@ -116,11 +116,11 @@ export function AdminActivitiesPage() {
           </thead>
           <tbody>
             {items.map((a) => (
-              <tr key={a.id} className="border-t border-white/10">
-                <td className="py-3 pr-3 font-medium text-white">
+              <tr key={a.id} className="border-t border-edge">
+                <td className="py-3 pr-3 font-medium text-fg">
                   {a.title}
                   {a.isSystem ? (
-                    <span className="ml-2 text-xs text-white/40">system</span>
+                    <span className="ml-2 text-xs text-fg-muted">system</span>
                   ) : null}
                 </td>
                 <td className="py-3 pr-3">{a.type}</td>
@@ -137,7 +137,7 @@ export function AdminActivitiesPage() {
                       type="button"
                       disabled={busy === a.id}
                       onClick={() => onDuplicate(a.id, Boolean(a.isSystem))}
-                      className="text-white/70 hover:text-white"
+                      className="text-fg-muted hover:text-fg"
                     >
                       Duplicate
                     </button>
@@ -147,7 +147,7 @@ export function AdminActivitiesPage() {
                           type="button"
                           disabled={busy === a.id}
                           onClick={() => onTogglePublish(a)}
-                          className="text-white/70 hover:text-white"
+                          className="text-fg-muted hover:text-fg"
                         >
                           {a.isPublished ? 'Unpublish' : 'Publish'}
                         </button>

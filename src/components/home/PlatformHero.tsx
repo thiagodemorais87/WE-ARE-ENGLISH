@@ -40,7 +40,7 @@ export function PlatformHero() {
             <div className="mt-8 flex flex-wrap gap-3">
               <GlareHover className="rounded-full">
                 <Link
-                  to={isAuthenticated ? '/activities' : '/#explore'}
+                  to={isAuthenticated ? '/activities' : '/login'}
                   className="inline-flex rounded-full bg-cherry px-6 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-lift"
                 >
                   Explore Activities
@@ -64,7 +64,7 @@ export function PlatformHero() {
               key={item.id}
               className="absolute w-[70%] overflow-hidden rounded-2xl border border-ink/10 shadow-lift transition"
               style={{
-                ...thumbnailStyle(item.thumbnail),
+                ...thumbnailStyle(item.thumbnail, item.type),
                 top: `${index * 28}px`,
                 left: `${index * 18}px`,
                 zIndex: preview.length - index,

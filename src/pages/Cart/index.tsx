@@ -6,8 +6,8 @@ export function CartPage() {
 
   return (
     <div className="container-wide space-y-8 px-4 py-10 sm:px-6">
-      <h1 className="display text-4xl text-white sm:text-5xl">Your Learning Cart</h1>
-      <p className="text-white/55">
+      <h1 className="display text-4xl text-fg sm:text-5xl">Your Learning Cart</h1>
+      <p className="text-fg-muted">
         Activities / Learning Packs — payment comes later. Everything is free for now.
       </p>
 
@@ -15,11 +15,11 @@ export function CartPage() {
         {cartPacks.map((pack) => (
           <article
             key={pack.id}
-            className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-2xl border border-edge bg-panel p-5 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <h2 className="font-semibold text-white">{pack.title}</h2>
-              <p className="text-sm text-white/50">
+              <h2 className="font-semibold text-fg">{pack.title}</h2>
+              <p className="text-sm text-fg-muted">
                 {pack.activityCount} activities · {pack.description}
               </p>
             </div>
@@ -28,7 +28,7 @@ export function CartPage() {
               <button
                 type="button"
                 onClick={() => removeFromCart(pack.id)}
-                className="text-xs text-white/40 hover:text-white"
+                className="text-xs text-fg-muted hover:text-fg"
               >
                 Remove
               </button>
@@ -36,9 +36,9 @@ export function CartPage() {
           </article>
         ))}
         {!cartPacks.length && (
-          <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center">
-            <p className="text-white/70">Your cart is empty.</p>
-            <p className="mt-2 text-sm text-white/45">
+          <div className="rounded-2xl border border-dashed border-edge p-8 text-center">
+            <p className="text-fg-muted">Your cart is empty.</p>
+            <p className="mt-2 text-sm text-fg-muted">
               Plans coming soon — for now every activity is free. Browse the catalog and start
               practicing.
             </p>
@@ -46,8 +46,8 @@ export function CartPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 p-5">
-        <p className="text-lg text-white">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-edge p-5">
+        <p className="text-lg text-fg">
           Total: <span className="font-semibold text-soft-pink">Free</span>
         </p>
         <Link

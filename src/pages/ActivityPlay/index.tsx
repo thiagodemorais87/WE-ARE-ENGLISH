@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { fetchActivity } from '@/services/activities/activity.service'
-import { startAttempt, completeAttempt } from '@/services/activities/attempt.service'
+import { completeAttempt, getOrStartAttempt } from '@/services/activities/attempt.service'
 import { useAuth } from '@/contexts/AuthContext'
 import { ActivityRenderer } from '@/components/activities/engine/ActivityRenderer'
 import type { Activity } from '@/types/activity'
@@ -25,7 +25,7 @@ export function ActivityPlayPage() {
       setActivity(a)
       if (a && user) {
         try {
-          const attempt = await startAttempt(a.id, user.id)
+          const attempt = await getOrStartAttempt(a.id, user.id)
           attemptIdRef.current = attempt.id
         } catch {
           /* local / offline */
@@ -53,12 +53,12 @@ export function ActivityPlayPage() {
   }, [activity, navigate])
 
   if (!activity) {
-    return <div className="px-4 py-16 text-center text-white/50">Loading player…</div>
+    return <div className="px-4 py-16 text-center text-fg-muted">Loading player…</div>
   }
 
   return (
     <div className="container-wide px-4 py-8 sm:px-6 sm:py-12">
-      <Link to={`/activity/${activity.id}`} className="text-sm text-white/50 hover:text-white">
+      <Link to={`/activity/${activity.id}`} className="text-sm text-fg-muted hover:text-fg">
         ← Activity details
       </Link>
       {savedScore != null ? (

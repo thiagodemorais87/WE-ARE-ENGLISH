@@ -6,6 +6,7 @@ import type {
   ActivityContent,
   QuizQuestionItem,
 } from '@/types/activity'
+import { pickThumbnail } from './thumbnails.ts'
 
 const LEVELS: ActivityLevel[] = ['A1', 'A2', 'B1', 'B2']
 const SKILLS: EngineActivityType[] = [
@@ -156,6 +157,100 @@ export function buildQuizQuestions(
   }))
 }
 
+/** Cambridge-style open cloze: 10 sentences with one gap each */
+export function buildCambridgeFillBlank(
+  level: ActivityLevel,
+): {
+  items: { id: string; sentence: string; answer: string; alternatives?: string[] }[]
+  explanation: string
+} {
+  const banks: Record<ActivityLevel, { sentence: string; answer: string; alternatives?: string[] }[]> = {
+    A1: [
+      { sentence: 'I _____ a student.', answer: 'am' },
+      { sentence: 'She _____ happy today.', answer: 'is' },
+      { sentence: 'They _____ my friends.', answer: 'are' },
+      { sentence: 'He _____ from Brazil.', answer: 'is' },
+      { sentence: 'We _____ in the classroom.', answer: 'are' },
+      { sentence: 'This _____ a book.', answer: 'is' },
+      { sentence: 'There _____ a cat on the sofa.', answer: 'is' },
+      { sentence: 'My name _____ Ana.', answer: 'is' },
+      { sentence: 'You _____ very kind.', answer: 'are' },
+      { sentence: 'It _____ cold outside.', answer: 'is' },
+    ],
+    A2: [
+      { sentence: 'I _____ to the cinema yesterday.', answer: 'went' },
+      { sentence: 'She is interested _____ music.', answer: 'in' },
+      { sentence: 'We _____ going to visit grandma.', answer: 'are' },
+      { sentence: 'He _____ already finished his homework.', answer: 'has' },
+      { sentence: 'There _____ many people at the party.', answer: 'were' },
+      { sentence: 'I usually _____ coffee in the morning.', answer: 'drink' },
+      { sentence: 'Can you _____ me the salt, please?', answer: 'pass' },
+      { sentence: 'She _____ taller than her brother.', answer: 'is' },
+      { sentence: 'They _____ lived here for two years.', answer: 'have' },
+      { sentence: 'Do you _____ pizza?', answer: 'like' },
+    ],
+    B1: [
+      { sentence: 'I have _____ finished the report.', answer: 'already' },
+      { sentence: 'If it rains, we _____ stay home.', answer: 'will' },
+      { sentence: 'She used _____ dance when she was young.', answer: 'to' },
+      { sentence: 'You should _____ a doctor.', answer: 'see' },
+      { sentence: 'The book _____ I bought was expensive.', answer: 'which', alternatives: ['that'] },
+      { sentence: 'He has been working here _____ 2020.', answer: 'since' },
+      { sentence: 'I look forward _____ hearing from you.', answer: 'to' },
+      { sentence: 'We _____ never been to Japan.', answer: 'have' },
+      { sentence: 'She might _____ late tonight.', answer: 'be' },
+      { sentence: 'Although it was cold, they _____ swimming.', answer: 'went' },
+    ],
+    B2: [
+      { sentence: 'The letter was _____ yesterday.', answer: 'sent' },
+      { sentence: 'He said he _____ tired.', answer: 'was' },
+      { sentence: 'If I _____ you, I would apply.', answer: 'were' },
+      { sentence: 'Not only _____ she win, but she also set a record.', answer: 'did' },
+      { sentence: 'I wish I _____ more time.', answer: 'had' },
+      { sentence: 'The project, _____ was delayed, finally launched.', answer: 'which' },
+      { sentence: 'She insisted _____ paying the bill.', answer: 'on' },
+      { sentence: 'By next year they will _____ finished the course.', answer: 'have' },
+      { sentence: 'Rarely _____ I seen such talent.', answer: 'have' },
+      { sentence: 'He apologized _____ being late.', answer: 'for' },
+    ],
+    C1: [
+      { sentence: 'Had I known, I _____ have helped.', answer: 'would' },
+      { sentence: 'What matters _____ practice.', answer: 'is' },
+      { sentence: 'It was John _____ called.', answer: 'who' },
+      { sentence: 'Hardly _____ we arrived when it started raining.', answer: 'had' },
+      { sentence: 'She is believed _____ left the country.', answer: 'to' },
+      { sentence: 'The more you practice, _____ better you become.', answer: 'the' },
+      { sentence: 'I would rather you _____ tomorrow.', answer: 'came' },
+      { sentence: 'No sooner _____ he spoken than the door opened.', answer: 'had' },
+      { sentence: 'She denied _____ stolen the documents.', answer: 'having' },
+      { sentence: 'Little _____ they know about the risks.', answer: 'did' },
+    ],
+    C2: [
+      { sentence: 'Were it not _____ your help, we would have failed.', answer: 'for' },
+      { sentence: 'Such _____ his influence that few dared disagree.', answer: 'was' },
+      { sentence: 'Be that _____ it may, we must proceed.', answer: 'as' },
+      { sentence: 'Scarcely _____ the ink dried when the deal collapsed.', answer: 'had' },
+      { sentence: 'He spoke as _____ he owned the place.', answer: 'if', alternatives: ['though'] },
+      { sentence: 'Far _____ it from me to criticize, but…', answer: 'be' },
+      { sentence: 'The proposal, ingenious _____ it was, proved unworkable.', answer: 'though', alternatives: ['as'] },
+      { sentence: 'Only then _____ the truth become clear.', answer: 'did' },
+      { sentence: 'Suffice _____ to say that negotiations failed.', answer: 'it' },
+      { sentence: 'Strange _____ it seems, the theory holds.', answer: 'as', alternatives: ['though'] },
+    ],
+  }
+
+  const pool = banks[level] ?? banks.B1
+  return {
+    items: pool.slice(0, 10).map((item, i) => ({
+      id: `fb${i + 1}`,
+      sentence: item.sentence,
+      answer: item.answer,
+      alternatives: item.alternatives,
+    })),
+    explanation: 'Complete each gap with one word. Spelling must match (case does not matter).',
+  }
+}
+
 function listeningScript(level: ActivityLevel, topic: string): string {
   if (level === 'A1') {
     return `Hello! Welcome to today’s practice about ${topic}. My name is Anna. I am a student. I like coffee and books. Please listen carefully and answer the questions.`
@@ -254,9 +349,21 @@ function buildContent(type: EngineActivityType, level: ActivityLevel, index: num
       return {
         text:
           level === 'A1'
-            ? 'This is a ship. That is a sheep. Please say both clearly.'
-            : 'I wanted to ask about yesterday’s meeting. Focus on word endings and stress.',
-        tips: 'Listen to vowel length and word endings carefully. Record yourself and compare.',
+            ? 'This is a thin thing.'
+            : level === 'A2'
+              ? 'I thought it was better.'
+              : level === 'B1'
+                ? 'I wanted to ask about yesterday’s meeting.'
+                : 'Photography is interesting when light is perfect.',
+        tips: 'Listen to the model, record yourself, then compare side by side.',
+        focus:
+          level === 'A1'
+            ? 'TH sound'
+            : level === 'A2'
+              ? 'TH sound'
+              : level === 'B1'
+                ? 'Past -ed endings'
+                : 'Word stress',
       }
     case 'multiple_choice':
       return {
@@ -266,12 +373,19 @@ function buildContent(type: EngineActivityType, level: ActivityLevel, index: num
         explanation: questions[0]!.explanation,
         questions,
       }
-    case 'fill_blank':
+    case 'fill_blank': {
+      const cloze = buildCambridgeFillBlank(level)
       return {
-        text: level === 'A1' ? 'I _____ a student.' : 'She has _____ finished her homework.',
-        blanks: [{ id: 'b1', answer: level === 'A1' ? 'am' : 'already' }],
-        explanation: 'Fill the gap with the most natural word.',
+        items: cloze.items,
+        text: cloze.items[0]?.sentence,
+        blanks: cloze.items.map((it) => ({
+          id: it.id,
+          answer: it.answer,
+          alternatives: it.alternatives,
+        })),
+        explanation: cloze.explanation,
       }
+    }
     case 'word_order':
       return {
         prompt: 'Put the words in the correct order.',
@@ -304,11 +418,10 @@ function buildContent(type: EngineActivityType, level: ActivityLevel, index: num
 
 /** Reliable, embeddable YouTube URLs (youtube-nocookie + known public IDs). */
 const MEDIA_EMBEDS = {
-  // Lofi beats — stable public embed for music listening practice
-  music: 'https://www.youtube-nocookie.com/embed/jfKfPfyJRdk',
+  // Popular song with stable embed (not a live stream)
+  music: 'https://www.youtube-nocookie.com/embed/e-ORhEE9VVg',
   // YouTube IFrame API sample video — always embeddable
   video: 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE',
-  // Same reliable host for game warm-up clip
   game: 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE',
 } as const
 
@@ -365,7 +478,7 @@ export function buildSystemSeedActivities(): Activity[] {
           level,
           difficulty: difficulty === 'easy' ? 'basic' : difficulty === 'hard' ? 'advanced' : 'intermediate',
           duration: type === 'writing' || type === 'speaking' ? 15 : 10,
-          thumbnail: `https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80&auto=format&fit=crop&sig=${n}`,
+          thumbnail: pickThumbnail(type, n),
           instructions: `Complete this ${type} activity carefully.`,
           content: buildContent(type, level, i),
           points: difficulty === 'easy' ? 10 : difficulty === 'medium' ? 15 : 20,
@@ -402,7 +515,7 @@ export function buildSystemSeedActivities(): Activity[] {
           level,
           difficulty: difficulty === 'easy' ? 'basic' : difficulty === 'hard' ? 'advanced' : 'intermediate',
           duration: 8,
-          thumbnail: `https://images.unsplash.com/photo-1456513086600-3a0f6d0e8f1c?w=800&q=80&auto=format&fit=crop&sig=${n}`,
+          thumbnail: pickThumbnail(type, n),
           instructions: `Complete the ${type.replace('_', ' ')} task.`,
           content: buildContent(type, level, i),
           points: 10,
@@ -416,55 +529,183 @@ export function buildSystemSeedActivities(): Activity[] {
   }
 
   list.push(
-    mediaSeed(
-      'sys-music-feel-lyrics',
-      'music',
-      'Feel the Lyrics',
-      'B1',
-      'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-music-chorus-fill',
-      'music',
-      'Chorus Fill-In',
-      'A2',
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-video-workday-vlog',
-      'video',
-      'Workday Vlog',
-      'B1',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-video-interview-clip',
-      'video',
-      'Interview Clip',
-      'B2',
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-game-quick-quiz',
-      'game',
-      'Quick Quiz Arena',
-      'A2',
-      'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-game-grammar-duel',
-      'game',
-      'Grammar Duel',
-      'B1',
-      'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=800&q=80&auto=format&fit=crop',
-    ),
-    mediaSeed(
-      'sys-game-vocab-battle',
-      'game',
-      'Vocabulary Battle',
-      'B1',
-      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80&auto=format&fit=crop',
-    ),
+    {
+      id: 'sys-pron-thought-better',
+      title: 'I Thought It Was Better',
+      description: 'Pronunciation Lab: listen, record, and compare the TH sound.',
+      type: 'pronunciation',
+      level: 'A2',
+      difficulty: 'basic',
+      duration: 5,
+      thumbnail: pickThumbnail('pronunciation', 0),
+      instructions: 'Listen to the native model, record yourself, then compare.',
+      content: {
+        text: 'I thought it was better.',
+        tips: 'Put your tongue between your teeth for “thought” and “the” sounds.',
+        focus: 'TH sound',
+      },
+      points: 15,
+      isPublished: true,
+      isSystem: true,
+      skills: ['pronunciation'],
+      practicePoints: ['TH sound', 'Clear consonants'],
+      categoryTags: ['system', 'pronunciation', 'trending'],
+    },
+    {
+      id: 'sys-pron-word-stress',
+      title: 'Word Stress: Photography',
+      description: 'Pronunciation Lab: practice stress on the right syllable.',
+      type: 'pronunciation',
+      level: 'B1',
+      difficulty: 'intermediate',
+      duration: 5,
+      thumbnail: pickThumbnail('pronunciation', 1),
+      instructions: 'Listen, record, and compare word stress.',
+      content: {
+        text: 'Photography is interesting.',
+        tips: 'Stress falls on -TOG- in pho-TOG-ra-phy.',
+        focus: 'Word stress',
+      },
+      points: 15,
+      isPublished: true,
+      isSystem: true,
+      skills: ['pronunciation'],
+      practicePoints: ['Word stress', 'Multisyllable words'],
+      categoryTags: ['system', 'pronunciation'],
+    },
+    {
+      id: 'sys-pron-past-ed',
+      title: 'Past -ed Endings',
+      description: 'Pronunciation Lab: clear -ed endings in past verbs.',
+      type: 'pronunciation',
+      level: 'A2',
+      difficulty: 'basic',
+      duration: 5,
+      thumbnail: pickThumbnail('pronunciation', 2),
+      instructions: 'Listen, record, and compare the -ed endings.',
+      content: {
+        text: 'I wanted to ask about yesterday’s meeting.',
+        tips: '“Wanted” has an extra syllable: want-ed. Keep the ending clear.',
+        focus: 'Past -ed endings',
+      },
+      points: 15,
+      isPublished: true,
+      isSystem: true,
+      skills: ['pronunciation'],
+      practicePoints: ['-ed endings', 'Past tense clarity'],
+      categoryTags: ['system', 'pronunciation'],
+    },
+    mediaSeed('sys-music-feel-lyrics', 'music', 'Feel the Lyrics', 'B1', pickThumbnail('music', 0)),
+    mediaSeed('sys-music-chorus-fill', 'music', 'Chorus Fill-In', 'A2', pickThumbnail('music', 1)),
+    mediaSeed('sys-video-workday-vlog', 'video', 'Workday Vlog', 'B1', pickThumbnail('video', 0)),
+    mediaSeed('sys-video-interview-clip', 'video', 'Interview Clip', 'B2', pickThumbnail('video', 1)),
+    {
+      id: 'sys-video-ordering-coffee',
+      title: 'Ordering Coffee in New York',
+      description:
+        'Watch a café order, tap words in the transcript, then complete the sentence.',
+      type: 'video',
+      level: 'A2',
+      difficulty: 'basic',
+      duration: 8,
+      thumbnail: pickThumbnail('video', 2),
+      instructions: 'Watch → explore the transcript → complete the gap → listen again.',
+      content: {
+        mode: 'interactive',
+        embedUrl: 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE',
+        transcript: [
+          { start: 0, end: 3, text: "I'd like a large coffee, please." },
+          { start: 3, end: 6, text: 'Sure. Anything else today?' },
+          { start: 6, end: 9, text: 'No, just the coffee. Thank you.' },
+        ],
+        glossary: {
+          "I'd": {
+            meaning: 'I would — polite way to ask for something.',
+            pronunciation: '/aɪd/',
+            kind: 'explain',
+          },
+          large: {
+            meaning: 'Big size (bigger than medium or small).',
+            pronunciation: '/lɑːrdʒ/',
+            kind: 'meaning',
+          },
+          coffee: {
+            meaning: 'A hot drink made from coffee beans.',
+            pronunciation: '/ˈkɒfi/',
+            kind: 'sound',
+          },
+          please: {
+            meaning: 'A polite word used when asking for something.',
+            pronunciation: '/pliːz/',
+            kind: 'meaning',
+          },
+        },
+        gap: {
+          sentence: "I'd like a ______ coffee, please.",
+          options: ['large', 'small', 'hot'],
+          correctIndex: 0,
+          explanation: 'In the video, the customer asks for a large coffee.',
+        },
+      },
+      points: 15,
+      isPublished: true,
+      isSystem: true,
+      skills: ['video', 'listening', 'vocabulary'],
+      practicePoints: ['Café English', 'Polite requests', 'Size vocabulary'],
+      categoryTags: ['system', 'video', 'trending', 'listening'],
+    },
+    {
+      id: 'sys-video-at-the-airport-desk',
+      title: 'At the Airport Desk',
+      description: 'Interactive video: check-in phrases with tap-to-learn transcript.',
+      type: 'video',
+      level: 'B1',
+      difficulty: 'intermediate',
+      duration: 10,
+      thumbnail: pickThumbnail('video', 3),
+      instructions: 'Watch → explore words → complete the gap → listen again.',
+      content: {
+        mode: 'interactive',
+        embedUrl: 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE',
+        transcript: [
+          { start: 0, end: 4, text: 'Good morning. I have a reservation.' },
+          { start: 4, end: 8, text: 'May I see your passport, please?' },
+          { start: 8, end: 12, text: 'Of course. Here you are.' },
+        ],
+        glossary: {
+          reservation: {
+            meaning: 'A booking you made in advance.',
+            pronunciation: '/ˌrezəˈveɪʃn/',
+            kind: 'meaning',
+          },
+          passport: {
+            meaning: 'Official travel document with your photo.',
+            pronunciation: '/ˈpɑːspɔːt/',
+            kind: 'sound',
+          },
+          May: {
+            meaning: 'Polite word for asking permission.',
+            pronunciation: '/meɪ/',
+            kind: 'explain',
+          },
+        },
+        gap: {
+          sentence: 'May I see your ______, please?',
+          options: ['passport', 'ticket', 'suitcase'],
+          correctIndex: 0,
+          explanation: 'The agent asks to see the passenger’s passport.',
+        },
+      },
+      points: 15,
+      isPublished: true,
+      isSystem: true,
+      skills: ['video', 'listening'],
+      practicePoints: ['Travel English', 'Polite questions'],
+      categoryTags: ['system', 'video', 'listening'],
+    },
+    mediaSeed('sys-game-quick-quiz', 'game', 'Quick Quiz Arena', 'A2', pickThumbnail('game', 0)),
+    mediaSeed('sys-game-grammar-duel', 'game', 'Grammar Duel', 'B1', pickThumbnail('game', 1)),
+    mediaSeed('sys-game-vocab-battle', 'game', 'Vocabulary Battle', 'B1', pickThumbnail('game', 2)),
   )
 
   return list

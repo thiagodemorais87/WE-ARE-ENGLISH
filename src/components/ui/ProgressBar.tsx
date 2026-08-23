@@ -8,7 +8,7 @@ type Props = {
 export function ProgressBar({
   value,
   className = '',
-  trackClassName = 'bg-white/10',
+  trackClassName = 'bg-panel-strong',
   barClassName = 'bg-cherry',
 }: Props) {
   const clamped = Math.max(0, Math.min(100, value))

@@ -1,9 +1,15 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Activity } from '@/types/activity'
 import { typeIcons, typeLabels } from '@/data/categories'
 import { useAuth } from '@/contexts/AuthContext'
 import { difficultyLabel } from '@/lib/labels'
-import { thumbnailStyle } from '@/lib/thumbnail'
+import {
+  FALLBACK_THUMB,
+  THUMB_POOLS,
+  nextThumbnailFallback,
+  resolveThumbnailUrl,
+} from '@/lib/thumbnail'
 
 type Props = {
   activity: Activity
@@ -13,16 +19,22 @@ type Props = {
 export function ActivityCard({ activity, className = '' }: Props) {
   const { isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
-  // Never flash the signup lock while auth is still resolving
   const showLock = !loading && !isAuthenticated
+  const [attempt, setAttempt] = useState(0)
+  const [src, setSrc] = useState(() => resolveThumbnailUrl(activity.thumbnail, activity.type, 0))
+
+  useEffect(() => {
+    setAttempt(0)
+    setSrc(resolveThumbnailUrl(activity.thumbnail, activity.type, 0))
+  }, [activity.id, activity.thumbnail, activity.type])
 
   const go = () => {
     if (loading) return
     if (showLock) {
-      navigate('/login', { state: { from: `/activity/${activity.id}/play` } })
+      navigate('/login', { state: { from: `/activity/${activity.id}` } })
       return
     }
-    navigate(`/activity/${activity.id}/play`)
+    navigate(`/activity/${activity.id}`, { state: { from: '/activities' } })
   }
 
   return (
@@ -36,10 +48,24 @@ export function ActivityCard({ activity, className = '' }: Props) {
         className,
       ].join(' ')}
     >
-      <div
-        className="relative aspect-[16/10] w-full bg-graphite"
-        style={thumbnailStyle(activity.thumbnail)}
-      >
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-graphite">
+        <img
+          src={src}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          onError={() => {
+            const pool = activity.type
+              ? (THUMB_POOLS[activity.type] ?? THUMB_POOLS.grammar)
+              : []
+            if (attempt >= pool.length) {
+              if (src !== FALLBACK_THUMB) setSrc(FALLBACK_THUMB)
+              return
+            }
+            setSrc(nextThumbnailFallback(activity.type, attempt))
+            setAttempt((a) => a + 1)
+          }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent" />
         <span className="absolute left-3 top-3 rounded-md bg-ink/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
           {typeIcons[activity.type]} {typeLabels[activity.type]}
@@ -61,11 +87,11 @@ export function ActivityCard({ activity, className = '' }: Props) {
         )}
 
         {showLock && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-ink/75 p-4 text-center opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100">
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-ink/55 p-4 text-center opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100">
             <p className="text-sm font-medium text-white">🔒 Sign in to start this activity</p>
             <Link
               to="/login"
-              state={{ from: `/activity/${activity.id}/play` }}
+              state={{ from: `/activity/${activity.id}` }}
               onClick={(e) => e.stopPropagation()}
               className="mt-3 rounded-full bg-cherry px-4 py-2 text-xs font-bold uppercase tracking-wide text-white"
             >
@@ -75,18 +101,18 @@ export function ActivityCard({ activity, className = '' }: Props) {
         )}
       </div>
 
-      <div className="space-y-1 p-3">
+      <div className="space-y-1 bg-graphite p-3">
         <h3 className="line-clamp-1 text-sm font-semibold text-white">{activity.title}</h3>
-        <p className="text-xs text-white/55">
+        <p className="text-xs text-white/70">
           {difficultyLabel(activity.difficulty)} · {activity.duration} min
         </p>
         {typeof activity.progress === 'number' && activity.progress > 0 && isAuthenticated && (
           <div className="pt-1">
-            <div className="mb-1 flex justify-between text-[10px] text-white/50">
+            <div className="mb-1 flex justify-between text-[10px] text-white/60">
               <span>Progress</span>
               <span>{activity.progress}%</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-white/10">
+            <div className="h-1 overflow-hidden rounded-full bg-white/15">
               <div
                 className="h-full rounded-full bg-cobalt"
                 style={{ width: `${activity.progress}%` }}

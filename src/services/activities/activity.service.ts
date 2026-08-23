@@ -54,15 +54,95 @@ export async function fetchByCategory(categoryId: string): Promise<Activity[]> {
   }
 }
 
+function localDayKey(date = new Date()): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function hashDay(key: string): number {
+  let h = 0
+  for (let i = 0; i < key.length; i++) {
+    h = (h * 31 + key.charCodeAt(i)) >>> 0
+  }
+  return h
+}
+
+/**
+ * Stable daily pick from short listening / fill_blank activities.
+ * Same calendar day → same activity for everyone.
+ */
+export async function getDailyChallenge(date = new Date()): Promise<Activity | null> {
+  const day = localDayKey(date)
+  const all = await listActivitiesFromDb({})
+  const pool = all.filter(
+    (a) =>
+      (a.type === 'listening' || a.type === 'fill_blank') &&
+      a.isPublished !== false &&
+      a.duration <= 10,
+  )
+  const fallback = all.filter(
+    (a) => (a.type === 'listening' || a.type === 'fill_blank') && a.isPublished !== false,
+  )
+  const list = pool.length ? pool : fallback.length ? fallback : all
+  if (!list.length) return null
+  const index = hashDay(day) % list.length
+  return list[index] ?? null
+}
+
+export async function isDailyChallengeCompletedToday(
+  userId: string,
+  activityId: string,
+  date = new Date(),
+): Promise<boolean> {
+  const day = localDayKey(date)
+  const attempts = await listAttemptsForUser(userId)
+  return attempts.some((a) => {
+    if (a.activityId !== activityId || !a.completedAt) return false
+    const completedDay = localDayKey(new Date(a.completedAt))
+    return completedDay === day
+  })
+}
+
 export async function fetchContinueLearning(userId?: string): Promise<Activity[]> {
   if (!userId) return delay([])
   const attempts = await listAttemptsForUser(userId)
   const incomplete = attempts.filter((a) => !a.completedAt)
-  const ids = [...new Set(incomplete.map((a) => a.activityId))].slice(0, 8)
+  // Prefer most recently started incomplete attempts; one card per activity
+  const seen = new Set<string>()
+  const ordered: typeof incomplete = []
+  for (const a of incomplete) {
+    if (seen.has(a.activityId)) continue
+    seen.add(a.activityId)
+    ordered.push(a)
+  }
+  const slice = ordered.slice(0, 8)
   const result: Activity[] = []
-  for (const id of ids) {
-    const a = await getActivityFromDb(id)
-    if (a) result.push(a)
+  for (const attempt of slice) {
+    const a = await getActivityFromDb(attempt.activityId)
+    if (a) {
+      result.push({
+        ...a,
+        // In-progress sessions show mid progress until completed
+        progress: 35,
+      })
+    }
+  }
+  // If nothing in progress, show recently completed so the home still has history
+  if (!result.length) {
+    const done = attempts.filter((a) => a.completedAt).slice(0, 6)
+    for (const attempt of done) {
+      if (seen.has(attempt.activityId)) continue
+      seen.add(attempt.activityId)
+      const a = await getActivityFromDb(attempt.activityId)
+      if (a) {
+        result.push({
+          ...a,
+          progress: typeof attempt.score === 'number' ? attempt.score : 100,
+        })
+      }
+    }
   }
   return result
 }

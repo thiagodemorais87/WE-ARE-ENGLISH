@@ -76,6 +76,18 @@ export async function startAttempt(activityId: string, userId: string): Promise<
   return mapAttempt(data)
 }
 
+/** Reuse an open attempt for the same activity instead of creating spam rows. */
+export async function getOrStartAttempt(
+  activityId: string,
+  userId: string,
+): Promise<ActivityAttempt> {
+  const existing = (await listAttemptsForUser(userId)).find(
+    (a) => a.activityId === activityId && !a.completedAt,
+  )
+  if (existing) return existing
+  return startAttempt(activityId, userId)
+}
+
 export async function completeAttempt(
   attemptId: string,
   payload: {

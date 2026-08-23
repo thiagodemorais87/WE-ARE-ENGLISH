@@ -26,16 +26,21 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
   const [volume, setVolume] = useState(1)
   const [speed, setSpeed] = useState(1)
   const [ttsSupported, setTtsSupported] = useState(false)
+  /** When remote MP3 fails, fall back to browser TTS. */
+  const [fileBroken, setFileBroken] = useState(false)
 
-  const useFile = Boolean(src)
   const text = speakText?.trim() || ''
+  const useFile = Boolean(src) && !fileBroken
   const useTts = !useFile && Boolean(text) && ttsSupported
   const canPlay = useFile || useTts
 
   useEffect(() => {
+    setFileBroken(false)
+  }, [src])
+
+  useEffect(() => {
     setTtsSupported(typeof window !== 'undefined' && 'speechSynthesis' in window)
     if (typeof window === 'undefined' || !window.speechSynthesis) return
-    // Chrome loads voices asynchronously
     const warm = () => {
       void window.speechSynthesis.getVoices()
     }
@@ -58,7 +63,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       window.speechSynthesis.cancel()
     }
     utteranceRef.current = null
-  }, [src, speakText])
+  }, [src, speakText, fileBroken])
 
   useEffect(() => {
     return () => {
@@ -91,6 +96,11 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
     setPlaying(true)
   }
 
+  const onFileError = () => {
+    setPlaying(false)
+    setFileBroken(true)
+  }
+
   const toggle = async () => {
     if (useFile) {
       const el = audioRef.current
@@ -99,8 +109,12 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
         el.pause()
         setPlaying(false)
       } else {
-        await el.play()
-        setPlaying(true)
+        try {
+          await el.play()
+          setPlaying(true)
+        } catch {
+          onFileError()
+        }
       }
       return
     }
@@ -123,9 +137,13 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
     if (useFile) {
       const el = audioRef.current
       if (!el || !src) return
-      el.currentTime = 0
-      await el.play()
-      setPlaying(true)
+      try {
+        el.currentTime = 0
+        await el.play()
+        setPlaying(true)
+      } catch {
+        onFileError()
+      }
       return
     }
     if (!useTts) return
@@ -139,10 +157,14 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-ink/40 p-4">
-      {title ? <p className="mb-3 text-sm text-white/60">{title}</p> : null}
-      {useTts ? (
-        <p className="mb-3 text-xs text-white/45">Browser voice · transcript</p>
+    <div className="rounded-2xl border border-edge bg-panel p-4">
+      {title ? <p className="mb-2 text-sm font-medium text-fg">{title}</p> : null}
+      {useFile ? (
+        <p className="mb-3 text-xs text-fg-muted">Native audio</p>
+      ) : useTts ? (
+        <p className="mb-3 text-xs text-fg-muted">
+          {fileBroken ? 'Native audio unavailable · using browser voice' : 'Browser voice · transcript'}
+        </p>
       ) : null}
       {useFile ? (
         <audio
@@ -152,6 +174,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
           onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime)}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
           onEnded={() => setPlaying(false)}
+          onError={onFileError}
         />
       ) : null}
       <div className="flex flex-wrap items-center gap-3">
@@ -168,7 +191,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
           type="button"
           onClick={replay}
           disabled={!canPlay}
-          className="rounded-full border border-white/15 px-3 py-2 text-xs text-white/70 disabled:opacity-40"
+          className="rounded-full border border-edge px-3 py-2 text-xs text-fg-muted disabled:opacity-40"
         >
           Replay
         </button>
@@ -187,16 +210,16 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
               }}
               className="w-full accent-soft-pink"
             />
-            <p className="mt-1 text-xs text-white/45">
+            <p className="mt-1 text-xs text-fg-muted">
               {format(progress)} / {format(duration)}
             </p>
           </div>
         ) : (
-          <div className="min-w-[10rem] flex-1 text-xs text-white/45">
+          <div className="min-w-[10rem] flex-1 text-xs text-fg-muted">
             {useTts ? 'Tap play to hear the passage' : 'No playable audio'}
           </div>
         )}
-        <label className="flex items-center gap-2 text-xs text-white/55">
+        <label className="flex items-center gap-2 text-xs text-fg-muted">
           Vol
           <input
             type="range"
@@ -212,7 +235,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
             className="w-20 accent-cobalt"
           />
         </label>
-        <label className="flex items-center gap-2 text-xs text-white/55">
+        <label className="flex items-center gap-2 text-xs text-fg-muted">
           Speed
           <select
             value={speed}
@@ -221,7 +244,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
               setSpeed(v)
               if (useFile && audioRef.current) audioRef.current.playbackRate = v
             }}
-            className="rounded-lg border border-white/15 bg-ink px-2 py-1 text-white"
+            className="rounded-lg border border-edge bg-surface px-2 py-1 text-fg"
           >
             <option value={0.75}>0.75×</option>
             <option value={1}>1×</option>
@@ -231,7 +254,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
         </label>
       </div>
       {!canPlay ? (
-        <p className="mt-3 text-xs text-amber-200/80">
+        <p className="mt-3 text-xs text-amber-700 dark:text-amber-200/90">
           Audio is not available for this activity yet.
         </p>
       ) : null}

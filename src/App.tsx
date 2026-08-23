@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PlatformProvider } from '@/contexts/PlatformContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AppShell } from '@/components/layout/AppShell'
 import { BrandLoader } from '@/components/layout/BrandLoader'
 import { ProtectedRoute, TeacherRoute } from '@/components/layout/ProtectedRoute'
@@ -18,6 +19,10 @@ import { ProfilePage } from '@/pages/Profile'
 import { AdminActivitiesPage } from '@/pages/Admin/Activities'
 import { ActivityCreatePage } from '@/pages/Admin/ActivityCreate'
 import { ActivityEditPage } from '@/pages/Admin/ActivityEdit'
+import { FaqPage } from '@/pages/Faq'
+import { PrivacyPage } from '@/pages/Privacy'
+import { TermsPage } from '@/pages/Terms'
+import { ScrollToTop } from '@/components/layout/ScrollToTop'
 
 function AppRoutes() {
   const { show, finish } = useIntroLoader()
@@ -26,11 +31,15 @@ function AppRoutes() {
     <>
       {show ? <BrandLoader onDone={finish} /> : null}
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route element={<AppShell />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route
               path="/activities"
               element={
@@ -121,10 +130,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <PlatformProvider>
-        <AppRoutes />
-      </PlatformProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <PlatformProvider>
+          <AppRoutes />
+        </PlatformProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

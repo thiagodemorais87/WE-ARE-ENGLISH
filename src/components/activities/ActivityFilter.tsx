@@ -1,9 +1,11 @@
 import type { ActivityFilters } from '@/services/activities/activity.service'
 import type { ActivityType, CefrLevel, Difficulty } from '@/types/activity'
+import { typeLabels } from '@/data/categories'
 
 const skills: Array<ActivityType | 'all'> = [
   'all',
   'listening',
+  'pronunciation',
   'writing',
   'reading',
   'grammar',
@@ -37,7 +39,7 @@ function ChipGroup<T extends string>({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-wider text-white/45">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => {
           const active = selected === opt
@@ -50,7 +52,7 @@ function ChipGroup<T extends string>({
                 'rounded-full px-3 py-1.5 text-xs font-medium capitalize transition',
                 active
                   ? 'bg-cherry text-white'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10',
+                  : 'border border-edge bg-white text-ink hover:bg-sand',
               ].join(' ')}
             >
               {opt === 'all' ? 'All' : format(opt)}
@@ -66,12 +68,14 @@ function ChipGroup<T extends string>({
 
 export function ActivityFilter({ value, onChange }: Props) {
   return (
-    <div className="space-y-5 rounded-2xl border border-white/8 bg-white/[0.03] p-4 sm:p-5">
+    <div className="space-y-5 rounded-2xl border border-edge bg-white p-4 shadow-soft sm:p-5">
+      <p className="text-sm font-semibold text-ink">Filters</p>
       <ChipGroup
         label="Skill"
         options={skills}
         selected={(value.skill ?? 'all') as ActivityType | 'all'}
         onSelect={(skill) => onChange({ ...value, skill })}
+        format={(v) => (v === 'all' ? 'All' : (typeLabels[v as ActivityType] ?? v))}
       />
       <ChipGroup
         label="Level"

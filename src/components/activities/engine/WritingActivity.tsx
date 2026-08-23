@@ -92,8 +92,8 @@ export function WritingActivity({ activity, onComplete, onBack }: EngineActivity
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="text-white/80">{content.prompt}</p>
-      <p className="mt-2 text-xs text-white/45">
+      <p className="text-fg/80">{content.prompt}</p>
+      <p className="mt-2 text-xs text-fg-muted">
         Target {minWords}–{maxWords} words · {words} written
         {tooShort ? ' · keep writing…' : ''}
         {tooLong ? ' · a bit long' : ''}
@@ -105,7 +105,7 @@ export function WritingActivity({ activity, onComplete, onBack }: EngineActivity
           setHint(null)
         }}
         rows={10}
-        className="mt-4 w-full rounded-2xl border border-white/15 bg-ink/60 p-4 text-white outline-none focus:border-soft-pink"
+        className="mt-4 w-full rounded-2xl border border-edge bg-ink/60 p-4 text-fg outline-none focus:border-soft-pink"
         placeholder="Write your answer here…"
       />
       {hint ? <p className="mt-2 text-sm text-amber-200">{hint}</p> : null}
@@ -125,7 +125,7 @@ export function WritingActivity({ activity, onComplete, onBack }: EngineActivity
             correct={(result.score ?? 0) >= 60}
             message={`Score: ${result.score ?? '—'} · CEFR ${result.cefr ?? '—'}`}
           />
-          <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-fg-muted">
             {(Array.isArray(result.feedback) ? result.feedback : []).map((f) => (
               <li key={f}>{f}</li>
             ))}

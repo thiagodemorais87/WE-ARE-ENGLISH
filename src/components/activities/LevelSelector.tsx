@@ -19,7 +19,7 @@ export function LevelSelector({ value, onChange }: Props) {
             onClick={() => onChange(level)}
             className={[
               'rounded-full px-4 py-2 text-sm font-semibold transition',
-              active ? 'bg-cobalt text-white' : 'bg-white/5 text-white/70 hover:bg-white/10',
+              active ? 'bg-cobalt text-white' : 'bg-panel text-fg-muted hover:bg-panel-strong',
             ].join(' ')}
           >
             {level}

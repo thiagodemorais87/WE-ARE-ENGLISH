@@ -35,7 +35,7 @@ export function ActivityDetailPage() {
 
   if (!activity) {
     return (
-      <div className="container-wide px-4 py-16 text-white/60">
+      <div className="container-wide px-4 py-16 text-fg-muted">
         Loading activity…
       </div>
     )
@@ -45,8 +45,11 @@ export function ActivityDetailPage() {
     <div className="container-wide px-4 py-8 sm:px-6 sm:py-12">
       <button
         type="button"
-        onClick={() => navigate(-1)}
-        className="text-sm text-white/50 hover:text-white"
+        onClick={() => {
+          const from = (location.state as { from?: string } | null)?.from
+          navigate(from && from.startsWith('/') ? from : '/activities')
+        }}
+        className="text-sm text-fg-muted hover:text-fg"
       >
         ← Back
       </button>
@@ -56,14 +59,14 @@ export function ActivityDetailPage() {
           <p className="text-sm font-semibold uppercase tracking-wider text-soft-pink">
             {typeIcons[activity.type]} {typeLabels[activity.type]}
           </p>
-          <h1 className="mt-2 display text-4xl text-white sm:text-5xl">{activity.title}</h1>
+          <h1 className="mt-2 display text-4xl text-fg sm:text-5xl">{activity.title}</h1>
           {generated && (
             <p className="mt-2 text-sm text-cobalt">Custom session: {generated.title}</p>
           )}
-          <p className="mt-4 max-w-2xl text-lg text-white/60">{activity.description}</p>
+          <p className="mt-4 max-w-2xl text-lg text-fg-muted">{activity.description}</p>
 
           <div className="mt-8 space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-white/45">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-fg-muted">
               Level
             </h2>
             <DifficultySelector value={difficulty} onChange={setDifficulty} />
@@ -71,23 +74,23 @@ export function ActivityDetailPage() {
 
           <dl className="mt-8 grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-xs uppercase tracking-wider text-white/40">Duration</dt>
-              <dd className="mt-1 text-white">{activity.duration} minutes</dd>
+              <dt className="text-xs uppercase tracking-wider text-fg-muted">Duration</dt>
+              <dd className="mt-1 text-fg">{activity.duration} minutes</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-white/40">CEFR</dt>
-              <dd className="mt-1 text-white">{activity.level}</dd>
+              <dt className="text-xs uppercase tracking-wider text-fg-muted">CEFR</dt>
+              <dd className="mt-1 text-fg">{activity.level}</dd>
             </div>
           </dl>
 
           {activity.skills && (
             <div className="mt-6">
-              <h3 className="text-xs uppercase tracking-wider text-white/40">Skills</h3>
+              <h3 className="text-xs uppercase tracking-wider text-fg-muted">Skills</h3>
               <div className="mt-2 flex flex-wrap gap-2">
                 {activity.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-white/5 px-3 py-1 text-sm text-white/80"
+                    className="rounded-full bg-panel px-3 py-1 text-sm text-fg/80"
                   >
                     {skill}
                   </span>
@@ -98,8 +101,8 @@ export function ActivityDetailPage() {
 
           {activity.practicePoints && (
             <div className="mt-8">
-              <h3 className="text-lg font-semibold text-white">What you&apos;ll practice</h3>
-              <ul className="mt-3 space-y-2 text-white/65">
+              <h3 className="text-lg font-semibold text-fg">What you&apos;ll practice</h3>
+              <ul className="mt-3 space-y-2 text-fg/65">
                 {activity.practicePoints.map((point) => (
                   <li key={point}>• {point}</li>
                 ))}
@@ -117,7 +120,7 @@ export function ActivityDetailPage() {
             <button
               type="button"
               onClick={() => toggleFavorite(activity.id)}
-              className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white hover:bg-white/5"
+              className="rounded-full border border-edge px-5 py-3 text-sm font-semibold text-fg hover:bg-panel"
             >
               {isFavorite(activity.id) ? '★ Favorited' : '☆ Favorite'}
             </button>
@@ -125,8 +128,8 @@ export function ActivityDetailPage() {
         </div>
 
         <div
-          className="min-h-[280px] rounded-3xl border border-white/10 shadow-lift"
-          style={thumbnailStyle(activity.thumbnail)}
+          className="min-h-[280px] rounded-3xl border border-edge shadow-lift"
+          style={thumbnailStyle(activity.thumbnail, activity.type)}
         />
       </div>
     </div>

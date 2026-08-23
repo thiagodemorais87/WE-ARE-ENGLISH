@@ -9,10 +9,10 @@ export function ActivityCreatePage() {
 
   return (
     <div className="container-wide px-4 py-8 sm:px-6 sm:py-12">
-      <Link to="/admin/activities" className="text-sm text-white/50 hover:text-white">
+      <Link to="/admin/activities" className="text-sm text-fg-muted hover:text-fg">
         ← Back
       </Link>
-      <h1 className="mt-4 font-display text-3xl text-white">Create activity</h1>
+      <h1 className="mt-4 font-display text-3xl text-fg">Create activity</h1>
       <div className="mt-8">
         <ActivityForm
           submitLabel="Create"

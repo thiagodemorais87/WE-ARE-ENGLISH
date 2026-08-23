@@ -7,15 +7,45 @@
  *   VITE_SUPABASE_ANON_KEY (or SUPABASE_ANON_KEY)
  *   ADMIN_EMAIL + ADMIN_PASSWORD  (teacher or admin account)
  *
+ * Loads `.env` / `.env.local` from the project root when present.
+ *
  * Usage:
- *   node --experimental-strip-types scripts/generate-system-audio.mjs
- *   node --experimental-strip-types scripts/generate-system-audio.mjs --limit 5
- *   node --experimental-strip-types scripts/generate-system-audio.mjs --delay 1500
+ *   npm run audio:generate
+ *   npm run audio:generate -- --limit 5
+ *   npm run audio:generate -- --delay 1500
  *
  * Cost / rate-limit: ElevenLabs bills per character. This script waits between
  * calls (default 1200ms). Play still works without audio (transcript shown).
  */
 import { createClient } from '@supabase/supabase-js'
+import { readFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+function loadEnvFile(fileName) {
+  const path = resolve(process.cwd(), fileName)
+  if (!existsSync(path)) return
+  const text = readFileSync(path, 'utf8')
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq <= 0) continue
+    const key = trimmed.slice(0, eq).trim()
+    let val = trimmed.slice(eq + 1).trim()
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1)
+    }
+    if (!(key in process.env) || process.env[key] === '') {
+      process.env[key] = val
+    }
+  }
+}
+
+loadEnvFile('.env')
+loadEnvFile('.env.local')
 
 const args = process.argv.slice(2)
 function flag(name, fallback) {
@@ -24,8 +54,8 @@ function flag(name, fallback) {
   return fallback
 }
 
-const limit = Number(flag('limit', '50'))
-const delayMs = Number(flag('delay', '1200'))
+const limit = Number(flag('limit', '80'))
+const delayMs = Number(flag('delay', '1500'))
 
 const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -37,7 +67,9 @@ if (!url || !anon) {
   process.exit(1)
 }
 if (!email || !password) {
-  console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD (teacher or admin user).')
+  console.error(
+    'Set ADMIN_EMAIL and ADMIN_PASSWORD in .env.local (teacher or admin user) to call generate-audio.',
+  )
   process.exit(1)
 }
 

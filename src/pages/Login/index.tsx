@@ -37,10 +37,10 @@ export function LoginPage() {
       <FadeContent className="w-full max-w-md">
         <form
           onSubmit={onSubmit}
-          className="space-y-5 rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-soft"
+          className="space-y-5 rounded-3xl border border-edge bg-panel p-8 shadow-soft"
         >
           <div>
-            <p className="display text-3xl text-sand">{brand.name}</p>
+            <p className="display text-3xl text-ink">{brand.name}</p>
             <BlurText
               text="Welcome back."
               className="mt-2 text-xl font-semibold text-cherry"
@@ -49,7 +49,7 @@ export function LoginPage() {
             />
           </div>
 
-          <label className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-white/50">
+          <label className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-fg-muted">
             Email
             <input
               type="email"
@@ -60,7 +60,7 @@ export function LoginPage() {
             />
           </label>
 
-          <label className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-white/50">
+          <label className="block space-y-1.5 text-xs font-semibold uppercase tracking-wider text-fg-muted">
             Password
             <input
               type="password"
@@ -81,12 +81,12 @@ export function LoginPage() {
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
 
-          <p className="text-center text-sm text-white/45">
+          <p className="text-center text-sm text-fg-muted">
             <button type="button" className="hover:text-sand">
               Forgot password?
             </button>
           </p>
-          <p className="text-center text-sm text-white/45">
+          <p className="text-center text-sm text-fg-muted">
             Don&apos;t have an account?{' '}
             <Link to="/signup" className="font-semibold text-cherry hover:underline">
               Create account

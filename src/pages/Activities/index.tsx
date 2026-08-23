@@ -8,13 +8,24 @@ import {
   type ActivityFilters,
 } from '@/services/activities/activity.service'
 import type { Activity } from '@/types/activity'
+import type { ActivityType, CefrLevel } from '@/types/activity'
+
+function parseSkill(raw: string | null): ActivityFilters['skill'] {
+  if (!raw || raw === 'all') return 'all'
+  return raw as ActivityType
+}
+
+function parseLevel(raw: string | null): ActivityFilters['level'] {
+  if (!raw || raw === 'all') return 'all'
+  return raw as CefrLevel
+}
 
 export function ActivitiesPage() {
   const [params] = useSearchParams()
   const [filters, setFilters] = useState<ActivityFilters>({
     query: params.get('q') ?? '',
-    skill: 'all',
-    level: 'all',
+    skill: parseSkill(params.get('skill')),
+    level: parseLevel(params.get('level')),
     difficulty: 'all',
     duration: 'all',
   })
@@ -22,8 +33,12 @@ export function ActivitiesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const q = params.get('q')
-    if (q) setFilters((f) => ({ ...f, query: q }))
+    setFilters((f) => ({
+      ...f,
+      query: params.get('q') ?? '',
+      skill: params.has('skill') ? parseSkill(params.get('skill')) : f.skill,
+      level: params.has('level') ? parseLevel(params.get('level')) : f.level,
+    }))
   }, [params])
 
   useEffect(() => {
@@ -48,7 +63,7 @@ export function ActivitiesPage() {
   return (
     <div className="container-wide space-y-8 px-4 py-10 sm:px-6">
       <div className="space-y-4">
-        <h1 className="display text-4xl text-white sm:text-5xl">Explore Activities</h1>
+        <h1 className="display text-4xl text-fg sm:text-5xl">Explore Activities</h1>
         <SearchActivities
           value={filters.query ?? ''}
           onChange={(query) => setFilters((f) => ({ ...f, query }))}
@@ -59,11 +74,11 @@ export function ActivitiesPage() {
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         <ActivityFilter value={filters} onChange={setFilters} />
         <div>
-          <p className="mb-4 text-sm text-white/45">{loading ? 'Loading…' : countLabel}</p>
+          <p className="mb-4 text-sm text-fg-muted">{loading ? 'Loading…' : countLabel}</p>
           {loading ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-48 animate-pulse rounded-2xl bg-white/5" />
+                <div key={i} className="h-48 animate-pulse rounded-2xl bg-panel" />
               ))}
             </div>
           ) : (
@@ -72,7 +87,7 @@ export function ActivitiesPage() {
                 <ActivityCard key={activity.id} activity={activity} className="w-full sm:w-[240px]" />
               ))}
               {!items.length && (
-                <p className="text-white/50">No activities match these filters.</p>
+                <p className="text-fg-muted">No activities match these filters.</p>
               )}
             </div>
           )}

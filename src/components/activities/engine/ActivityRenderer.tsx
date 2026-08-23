@@ -48,7 +48,7 @@ export function ActivityRenderer({ activity, onComplete, onBack }: EngineActivit
   const Comp = registry[activity.type]
   if (!Comp) {
     return (
-      <div className="rounded-2xl border border-white/10 p-6 text-white/70">
+      <div className="rounded-2xl border border-edge p-6 text-fg-muted">
         Unsupported activity type: {activity.type}
       </div>
     )

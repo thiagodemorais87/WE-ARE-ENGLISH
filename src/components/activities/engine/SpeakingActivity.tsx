@@ -91,11 +91,11 @@ export function SpeakingActivity({ activity, onComplete, onBack }: EngineActivit
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="text-white/80">{content.prompt}</p>
+      <p className="text-fg/80">{content.prompt}</p>
       {content.referenceText ? (
-        <p className="mt-3 rounded-xl bg-white/5 p-3 text-sm italic text-soft-pink">{content.referenceText}</p>
+        <p className="mt-3 rounded-xl bg-panel p-3 text-sm italic text-soft-pink">{content.referenceText}</p>
       ) : null}
-      <p className="mt-2 text-xs text-white/45">Target ~{content.expectedDuration}s</p>
+      <p className="mt-2 text-xs text-fg-muted">Target ~{content.expectedDuration}s</p>
       <div className="mt-5 flex gap-3">
         {!recording ? (
           <button
@@ -116,7 +116,7 @@ export function SpeakingActivity({ activity, onComplete, onBack }: EngineActivit
           </button>
         )}
       </div>
-      {loading ? <p className="mt-3 text-sm text-white/50">Scoring…</p> : null}
+      {loading ? <p className="mt-3 text-sm text-fg-muted">Scoring…</p> : null}
       {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
       {result ? (
         <div className="mt-5 space-y-2">
@@ -124,7 +124,7 @@ export function SpeakingActivity({ activity, onComplete, onBack }: EngineActivit
             correct={(result.score ?? 0) >= 60}
             message={`Score: ${result.score ?? '—'} · ${result.cefr ?? ''}`}
           />
-          <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-fg-muted">
             {result.feedback.map((f) => (
               <li key={f}>{f}</li>
             ))}

@@ -23,11 +23,11 @@ export function DifficultySelector({ value, onChange }: Props) {
               'rounded-2xl border p-4 text-left transition',
               active
                 ? 'border-cherry bg-cherry/15 shadow-lift'
-                : 'border-white/10 bg-white/[0.03] hover:border-white/25',
+                : 'border-edge bg-panel hover:border-white/25',
             ].join(' ')}
           >
-            <p className="font-semibold text-white">{meta.label}</p>
-            <p className="mt-1 text-sm text-white/50">{meta.subtitle}</p>
+            <p className="font-semibold text-fg">{meta.label}</p>
+            <p className="mt-1 text-sm text-fg-muted">{meta.subtitle}</p>
           </button>
         )
       })}

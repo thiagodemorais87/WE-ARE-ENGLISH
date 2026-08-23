@@ -46,7 +46,7 @@ export function ListeningActivity({ activity, onComplete, onBack }: EngineActivi
       header={
         <div className="mb-6 space-y-3">
           {activity.instructions ? (
-            <p className="text-sm text-white/65">{activity.instructions}</p>
+            <p className="text-sm text-fg/65">{activity.instructions}</p>
           ) : null}
           <ListeningPlayer
             src={activity.audioUrl}
@@ -54,7 +54,7 @@ export function ListeningActivity({ activity, onComplete, onBack }: EngineActivi
             title="Listening audio"
           />
           {(content.audioText || content.transcript) && (
-            <details className="rounded-xl bg-white/5 p-3 text-sm text-white/70">
+            <details className="rounded-xl bg-panel p-3 text-sm text-fg-muted">
               <summary className="cursor-pointer text-soft-pink">Show transcript</summary>
               <p className="mt-2 italic">{content.transcript ?? content.audioText}</p>
             </details>

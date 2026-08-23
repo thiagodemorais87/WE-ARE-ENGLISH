@@ -24,7 +24,7 @@ export function GameActivity({ activity, onComplete, onBack }: EngineActivityPro
   return (
     <div className="mx-auto max-w-4xl">
       <div
-        className="mb-6 aspect-[21/9] w-full overflow-hidden rounded-3xl border border-white/10 bg-cover bg-center"
+        className="mb-6 aspect-[21/9] w-full overflow-hidden rounded-3xl border border-edge bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(120deg, rgba(210,0,1,.55), rgba(2,18,238,.45)), url(${activity.thumbnail || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&q=80'})`,
         }}
@@ -35,7 +35,7 @@ export function GameActivity({ activity, onComplete, onBack }: EngineActivityPro
         onComplete={onComplete}
         onBack={onBack ?? (() => navigate(-1))}
         header={
-          <p className="mb-4 text-sm text-white/60">
+          <p className="mb-4 text-sm text-fg-muted">
             Interactive battle · {questions.length} rounds
           </p>
         }

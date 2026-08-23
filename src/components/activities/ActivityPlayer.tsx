@@ -31,14 +31,14 @@ export function ActivityPlayer({
         <p className="text-xs font-semibold uppercase tracking-wider text-soft-pink">
           {activity.type} · {activity.level}
         </p>
-        <h1 className="text-2xl font-semibold text-white sm:text-3xl">{activity.title}</h1>
+        <h1 className="text-2xl font-semibold text-fg sm:text-3xl">{activity.title}</h1>
         <ProgressBar value={progress} />
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-fg-muted">
           Step {step} of {totalSteps}
         </p>
       </header>
 
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-8">
+      <div className="rounded-3xl border border-edge bg-panel p-5 sm:p-8">
         {children}
       </div>
 
@@ -46,7 +46,7 @@ export function ActivityPlayer({
         <button
           type="button"
           onClick={onBack}
-          className="rounded-full border border-white/15 px-5 py-2.5 text-sm text-white/70 hover:bg-white/5"
+          className="rounded-full border border-edge px-5 py-2.5 text-sm text-fg-muted hover:bg-panel"
         >
           Back
         </button>
@@ -78,12 +78,12 @@ export function FeedbackBanner({
       className={[
         'mt-4 rounded-2xl border p-4 text-sm',
         correct
-          ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
-          : 'border-amber-400/30 bg-amber-400/10 text-amber-100',
+          ? 'border-emerald-600/40 bg-emerald-500/10 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200'
+          : 'border-amber-600/40 bg-amber-500/10 text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100',
       ].join(' ')}
     >
       {correct ? '✓ Correct!' : 'Not quite.'}
-      <p className="mt-1 text-white/70">{message}</p>
+      <p className="mt-1 text-fg-muted">{message}</p>
     </div>
   )
 }
@@ -111,7 +111,7 @@ export function ChoiceList({
             'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition',
             value === index
               ? 'border-cobalt bg-cobalt/20 text-white'
-              : 'border-white/10 bg-white/[0.02] text-white/75 hover:border-white/25',
+              : 'border-edge bg-white/[0.02] text-fg/75 hover:border-white/25',
           ].join(' ')}
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-full border border-current text-xs">

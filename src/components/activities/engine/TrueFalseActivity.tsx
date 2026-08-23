@@ -28,7 +28,7 @@ export function TrueFalseActivity({ activity, onComplete, onBack }: EngineActivi
       totalSteps={1}
       onBack={onBack ?? (() => navigate(-1))}
     >
-      <p className="text-lg font-medium text-white">{content.statement}</p>
+      <p className="text-lg font-medium text-fg">{content.statement}</p>
       <div className="mt-5 flex gap-3">
         {[true, false].map((v) => (
           <button
@@ -37,7 +37,7 @@ export function TrueFalseActivity({ activity, onComplete, onBack }: EngineActivi
             disabled={checked}
             onClick={() => setChoice(v)}
             className={`rounded-full px-6 py-2.5 text-sm font-bold uppercase ${
-              choice === v ? 'bg-cherry text-white' : 'border border-white/20 text-white/80'
+              choice === v ? 'bg-cherry text-white' : 'border border-white/20 text-fg/80'
             }`}
           >
             {v ? 'True' : 'False'}
