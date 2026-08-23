@@ -6,7 +6,7 @@ import { youtubeEmbedUrl } from '@/components/activities/engine/MultiQuestionQui
 import type { EngineActivityProps } from '@/components/activities/engine/types'
 import type { InteractiveVideoContent } from '@/types/activity'
 
-const DEFAULT_EMBED = 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE'
+const DEFAULT_EMBED = 'https://www.youtube-nocookie.com/embed/IxbXVxYKVRw'
 
 export function isInteractiveVideoContent(
   content: unknown,
@@ -73,18 +73,19 @@ export function InteractiveVideoListening({
             key={replayKey}
             title={activity.title}
             src={embed}
-            className="aspect-video w-full"
+            className="aspect-video max-h-[360px] w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
           />
+          <p className="bg-ink/50 px-3 py-2 text-xs text-white/80">Short clip · under 5 min</p>
         </div>
       )}
 
       {step === 1 && (
         <div className="space-y-5">
           <p className="text-sm text-fg-muted">
-            Watch the clip, then tap underlined words for meaning and pronunciation.
+            Watch the short clip, then tap underlined words for meaning.
           </p>
           <InteractiveTranscript
             lines={content.transcript}
@@ -131,15 +132,15 @@ export function InteractiveVideoListening({
               onClick={onCheckGap}
               className="rounded-full bg-cobalt px-6 py-3 text-sm font-bold uppercase tracking-wide text-white disabled:opacity-50"
             >
-              Check
-            </button>
+            Check
+          </button>
           ) : (
             <div className="space-y-4">
               <FeedbackBanner
                 correct={correct}
                 message={
                   gap.explanation ??
-                  (correct ? 'Nice listening!' : `Correct answer: ${gap.options[gap.correctIndex]}`)
+                  (correct ? 'Nice!' : `Correct answer: ${gap.options[gap.correctIndex]}`)
                 }
               />
               <button

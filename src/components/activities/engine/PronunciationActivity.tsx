@@ -4,15 +4,46 @@ import { ActivityPlayer } from '@/components/activities/ActivityPlayer'
 import type { EngineActivityProps } from './types'
 import type { PronunciationContent } from '@/types/activity'
 
+function pickUsEnglishVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null
+  const voices = window.speechSynthesis.getVoices()
+  const score = (v: SpeechSynthesisVoice) => {
+    const n = `${v.name} ${v.lang}`.toLowerCase()
+    let s = 0
+    if (v.lang === 'en-US') s += 10
+    else if (v.lang.startsWith('en')) s += 4
+    if (n.includes('google') && n.includes('us')) s += 8
+    if (n.includes('microsoft') && (n.includes('aria') || n.includes('guy') || n.includes('jenny')))
+      s += 7
+    if (n.includes('samantha') || n.includes('alex') || n.includes('daniel')) s += 5
+    if (n.includes('enhanced') || n.includes('premium') || n.includes('neural')) s += 3
+    if (n.includes('brazil') || n.includes('portuguese') || n.includes('pt-')) s -= 20
+    return s
+  }
+  return [...voices].sort((a, b) => score(b) - score(a))[0] ?? null
+}
+
 function speakNative(text: string) {
   try {
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
     u.lang = 'en-US'
+    u.rate = 0.95
+    u.pitch = 1
+    const voice = pickUsEnglishVoice()
+    if (voice) u.voice = voice
     window.speechSynthesis.speak(u)
   } catch {
-    /* ignore — UI shows soft warning if needed */
+    /* ignore */
   }
+}
+
+function pickRecorderMime(): string {
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
+  for (const t of candidates) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) return t
+  }
+  return ''
 }
 
 export function PronunciationActivity({ activity, onComplete, onBack }: EngineActivityProps) {
@@ -23,17 +54,30 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
   const mediaRef = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
   const objectUrlRef = useRef<string | null>(null)
+  const levelRaf = useRef<number | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
 
   const [step, setStep] = useState(1)
   const [recording, setRecording] = useState(false)
+  const [level, setLevel] = useState(0)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [micError, setMicError] = useState<string | null>(null)
   const [ttsWarning, setTtsWarning] = useState(false)
   const [finished, setFinished] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    const warm = () => void window.speechSynthesis.getVoices()
+    warm()
+    window.speechSynthesis.addEventListener('voiceschanged', warm)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', warm)
+  }, [])
+
+  useEffect(() => {
     return () => {
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
+      if (levelRaf.current) cancelAnimationFrame(levelRaf.current)
+      void audioCtxRef.current?.close()
     }
   }, [])
 
@@ -46,18 +90,58 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
     speakNative(phrase)
   }
 
+  const stopMeter = () => {
+    if (levelRaf.current) cancelAnimationFrame(levelRaf.current)
+    levelRaf.current = null
+    setLevel(0)
+    void audioCtxRef.current?.close()
+    audioCtxRef.current = null
+  }
+
+  const startMeter = (stream: MediaStream) => {
+    try {
+      const ctx = new AudioContext()
+      audioCtxRef.current = ctx
+      const source = ctx.createMediaStreamSource(stream)
+      const analyser = ctx.createAnalyser()
+      analyser.fftSize = 256
+      source.connect(analyser)
+      const data = new Uint8Array(analyser.frequencyBinCount)
+      const tick = () => {
+        analyser.getByteFrequencyData(data)
+        let sum = 0
+        for (let i = 0; i < data.length; i++) sum += data[i]!
+        setLevel(Math.min(1, sum / (data.length * 80)))
+        levelRaf.current = requestAnimationFrame(tick)
+      }
+      tick()
+    } catch {
+      /* meter optional */
+    }
+  }
+
   const startRecording = async () => {
     setMicError(null)
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const rec = new MediaRecorder(stream)
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+      })
+      const mime = pickRecorderMime()
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
       chunks.current = []
       rec.ondataavailable = (e) => {
         if (e.data.size) chunks.current.push(e.data)
       }
       rec.onstop = () => {
+        stopMeter()
         stream.getTracks().forEach((t) => t.stop())
-        const blob = new Blob(chunks.current, { type: 'audio/webm' })
+        const type = mime || 'audio/webm'
+        const blob = new Blob(chunks.current, { type })
         if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
         const url = URL.createObjectURL(blob)
         objectUrlRef.current = url
@@ -65,7 +149,8 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
         setStep(3)
       }
       mediaRef.current = rec
-      rec.start()
+      startMeter(stream)
+      rec.start(250)
       setRecording(true)
     } catch {
       setMicError('Microphone access was denied or is unavailable. Allow the mic and try again.')
@@ -109,13 +194,15 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
 
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm text-fg-muted">Listen to the native model, then continue to record.</p>
+            <p className="text-sm text-fg-muted">
+              Listen to a clear model. Then continue when ready.
+            </p>
             <button
               type="button"
               onClick={playNative}
               className="rounded-full bg-cobalt px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white"
             >
-              Native pronunciation
+              Listen
             </button>
             {ttsWarning ? (
               <p className="text-sm text-amber-800 dark:text-amber-200">
@@ -136,7 +223,9 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
 
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-fg-muted">Record yourself saying the phrase clearly.</p>
+            <p className="text-sm text-fg-muted">
+              Speak clearly into the mic. Watch the meter — it should move when you talk.
+            </p>
             {!recording ? (
               <button
                 type="button"
@@ -146,13 +235,22 @@ export function PronunciationActivity({ activity, onComplete, onBack }: EngineAc
                 Record yourself
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={stopRecording}
-                className="rounded-full bg-cobalt px-6 py-3 text-sm font-bold uppercase tracking-wide text-white"
-              >
-                Stop
-              </button>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-cherry">Recording…</p>
+                <div className="h-2 overflow-hidden rounded-full bg-panel-strong">
+                  <div
+                    className="h-full rounded-full bg-cobalt transition-[width] duration-75"
+                    style={{ width: `${Math.round(level * 100)}%` }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={stopRecording}
+                  className="rounded-full bg-cobalt px-6 py-3 text-sm font-bold uppercase tracking-wide text-white"
+                >
+                  Stop
+                </button>
+              </div>
             )}
             {micError ? (
               <div className="space-y-2">

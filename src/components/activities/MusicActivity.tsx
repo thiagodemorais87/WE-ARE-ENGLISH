@@ -14,7 +14,7 @@ import type { EngineActivityProps } from '@/components/activities/engine/types'
 import type { MediaQuizContent } from '@/types/activity'
 
 const DEFAULT_MUSIC_EMBED = 'https://www.youtube-nocookie.com/embed/e-ORhEE9VVg'
-const DEFAULT_VIDEO_EMBED = 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE'
+const DEFAULT_VIDEO_EMBED = 'https://www.youtube-nocookie.com/embed/v9EWItbdvVs'
 
 function mediaQuestions(content: MediaQuizContent, fallback: QuizQuestion[]): QuizQuestion[] {
   if (content.questions?.length) return content.questions
@@ -104,14 +104,14 @@ export function MusicActivity({ activity, onComplete, onBack }: EngineActivityPr
           <iframe
             title={activity.title}
             src={embed}
-            className="aspect-video w-full"
+            className="aspect-video max-h-[360px] w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
           />
           <p className="p-3 text-xs text-fg-muted">
-            Music practice · If the player stays blank, check your network or try another browser.
+            Short clip · under 5 min · If blank, check your network.
           </p>
         </div>
       }
@@ -198,14 +198,14 @@ export function VideoActivity({ activity, onComplete, onBack }: EngineActivityPr
           <iframe
             title={activity.title}
             src={embed}
-            className="aspect-video w-full"
+            className="aspect-video max-h-[360px] w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
           />
           <p className="p-3 text-xs text-fg-muted">
-            Video practice · If the player stays blank, check your network or try another browser.
+            Short clip · under 5 min · If blank, check your network.
           </p>
         </div>
       }

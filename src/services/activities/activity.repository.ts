@@ -42,6 +42,21 @@ function localCatalog(): Activity[] {
   return [...byKey.values()]
 }
 
+function difficultyRank(d: Activity['difficulty']): number {
+  const n = normalizeDifficultyFilter(d)
+  if (n === 'hard') return 0
+  if (n === 'medium') return 1
+  return 2
+}
+
+function sortByDifficultyThenTitle(list: Activity[]): Activity[] {
+  return [...list].sort((a, b) => {
+    const dr = difficultyRank(a.difficulty) - difficultyRank(b.difficulty)
+    if (dr !== 0) return dr
+    return a.title.localeCompare(b.title)
+  })
+}
+
 function filterLocal(list: Activity[], filters: ActivityFilters): Activity[] {
   let result = [...list]
   if (!filters.includeUnpublished) {
@@ -77,7 +92,7 @@ function filterLocal(list: Activity[], filters: ActivityFilters): Activity[] {
         a.type.includes(q),
     )
   }
-  return result
+  return sortByDifficultyThenTitle(result)
 }
 
 /**
@@ -105,9 +120,9 @@ function mergeWithLocalSeeds(fromDb: Activity[], filters: ActivityFilters): Acti
 
   if (filters.skill && filters.skill !== 'all') {
     const forSkill = merged.filter((a) => a.type === filters.skill)
-    return forSkill.length ? forSkill : local
+    return sortByDifficultyThenTitle(forSkill.length ? forSkill : local)
   }
-  return merged
+  return sortByDifficultyThenTitle(merged)
 }
 
 export async function listActivitiesFromDb(filters: ActivityFilters = {}): Promise<Activity[]> {

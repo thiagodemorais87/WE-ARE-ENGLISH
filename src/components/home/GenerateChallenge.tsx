@@ -5,6 +5,7 @@ import type { ActivityType, CefrLevel, Difficulty } from '@/types/activity'
 
 const skills: ActivityType[] = [
   'listening',
+  'pronunciation',
   'writing',
   'reading',
   'grammar',
@@ -31,16 +32,17 @@ export function GenerateChallenge() {
     try {
       await generateChallenge({ skill, level, topic, difficulty, duration })
       const bySkill: Partial<Record<ActivityType, string>> = {
-        listening: 'sys-listening-b1-1',
-        writing: 'sys-writing-a2-1',
-        reading: 'sys-reading-b1-1',
-        grammar: 'sys-grammar-b1-1',
-        vocabulary: 'sys-vocabulary-a2-1',
+        listening: 'sys-listen-flat-viewing',
+        writing: 'sys-write-weekend-friend',
+        reading: 'sys-read-sleep-tips',
+        grammar: 'sys-grammar-perfect-detective',
+        vocabulary: 'sys-vocab-travel-pack',
+        pronunciation: 'sys-pron-thought-better',
         music: 'sys-music-feel-lyrics',
         video: 'sys-video-workday-vlog',
         game: 'sys-game-quick-quiz',
       }
-      const id = bySkill[skill] ?? 'sys-listening-b1-1'
+      const id = bySkill[skill] ?? 'sys-listen-cafe-order'
       navigate(`/activity/${id}/play`)
     } finally {
       setLoading(false)

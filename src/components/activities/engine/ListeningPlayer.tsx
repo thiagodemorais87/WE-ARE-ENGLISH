@@ -10,11 +10,19 @@ type Props = {
 function pickEnglishVoice(): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !window.speechSynthesis) return null
   const voices = window.speechSynthesis.getVoices()
-  return (
-    voices.find((v) => v.lang === 'en-US') ??
-    voices.find((v) => v.lang.startsWith('en')) ??
-    null
-  )
+  const score = (v: SpeechSynthesisVoice) => {
+    const n = `${v.name} ${v.lang}`.toLowerCase()
+    let s = 0
+    if (v.lang === 'en-US') s += 10
+    else if (v.lang.startsWith('en')) s += 4
+    if (n.includes('google') && n.includes('us')) s += 8
+    if (n.includes('microsoft') && (n.includes('aria') || n.includes('guy') || n.includes('jenny')))
+      s += 7
+    if (n.includes('samantha') || n.includes('alex') || n.includes('daniel')) s += 5
+    if (n.includes('brazil') || n.includes('portuguese') || n.includes('pt-')) s -= 20
+    return s
+  }
+  return [...voices].sort((a, b) => score(b) - score(a))[0] ?? null
 }
 
 export function ListeningPlayer({ src, speakText, title }: Props) {
@@ -79,7 +87,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
     window.speechSynthesis.cancel()
     const utter = new SpeechSynthesisUtterance(text)
     utter.lang = 'en-US'
-    utter.rate = speed
+    utter.rate = 0.95
     utter.volume = volume
     const voice = pickEnglishVoice()
     if (voice) utter.voice = voice
@@ -159,11 +167,13 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
   return (
     <div className="rounded-2xl border border-edge bg-panel p-4">
       {title ? <p className="mb-2 text-sm font-medium text-fg">{title}</p> : null}
-      {useFile ? (
-        <p className="mb-3 text-xs text-fg-muted">Native audio</p>
+        {useFile ? (
+        <p className="mb-3 text-xs text-fg-muted">Listen · native audio</p>
       ) : useTts ? (
         <p className="mb-3 text-xs text-fg-muted">
-          {fileBroken ? 'Native audio unavailable · using browser voice' : 'Browser voice · transcript'}
+          {fileBroken
+            ? 'Audio file unavailable · browser voice'
+            : 'Listen · browser voice'}
         </p>
       ) : null}
       {useFile ? (
@@ -216,7 +226,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
           </div>
         ) : (
           <div className="min-w-[10rem] flex-1 text-xs text-fg-muted">
-            {useTts ? 'Tap play to hear the passage' : 'No playable audio'}
+            {useTts ? 'Tap Listen to hear the passage' : 'No playable audio'}
           </div>
         )}
         <label className="flex items-center gap-2 text-xs text-fg-muted">

@@ -28,19 +28,27 @@ export function ActivityPlayer({
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-soft-pink">
-          {activity.type} · {activity.level}
-        </p>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-soft-pink">
+          <span>
+            {activity.type} · {activity.level}
+          </span>
+          {typeof activity.duration === 'number' ? (
+            <span className="rounded-full border border-edge bg-panel px-2.5 py-0.5 font-medium normal-case tracking-normal text-fg-muted">
+              {activity.duration} min
+            </span>
+          ) : null}
+        </div>
         <h1 className="text-2xl font-semibold text-fg sm:text-3xl">{activity.title}</h1>
+        {activity.instructions ? (
+          <p className="text-sm leading-relaxed text-fg-muted">{activity.instructions}</p>
+        ) : null}
         <ProgressBar value={progress} />
         <p className="text-xs text-fg-muted">
           Step {step} of {totalSteps}
         </p>
       </header>
 
-      <div className="rounded-3xl border border-edge bg-panel p-5 sm:p-8">
-        {children}
-      </div>
+      <div className="rounded-3xl border border-edge bg-panel p-5 sm:p-8">{children}</div>
 
       <nav className="flex items-center justify-between gap-3">
         <button

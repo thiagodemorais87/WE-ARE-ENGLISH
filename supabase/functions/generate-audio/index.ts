@@ -92,8 +92,8 @@ Deno.serve(async (req) => {
       (content.text as string) ||
       activity.title;
 
-    const voiceId = activity.audio_voice_id || "EXAVITQu4vr4xnSDxMaL";
-    const modelId = activity.audio_model_id || "eleven_multilingual_v2";
+    const voiceId = activity.audio_voice_id || "pNInz6obpgDQGcFmaJgB"; // Adam — clear US male
+    const modelId = activity.audio_model_id || "eleven_turbo_v2_5";
 
     const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
@@ -106,21 +106,44 @@ Deno.serve(async (req) => {
         text,
         model_id: modelId,
         voice_settings: {
-          stability: 0.4,
-          similarity_boost: 0.8,
+          stability: 0.45,
+          similarity_boost: 0.85,
+          style: 0.15,
+          use_speaker_boost: true,
         },
       }),
     });
 
-    if (!ttsRes.ok) {
-      const errText = await ttsRes.text();
+    // Fallback if turbo model unavailable on the account
+    let audioRes = ttsRes;
+    if (!audioRes.ok && modelId === "eleven_turbo_v2_5") {
+      audioRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: "POST",
+        headers: {
+          "xi-api-key": elevenKey,
+          "Content-Type": "application/json",
+          Accept: "audio/mpeg",
+        },
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: {
+            stability: 0.45,
+            similarity_boost: 0.85,
+          },
+        }),
+      });
+    }
+
+    if (!audioRes.ok) {
+      const errText = await audioRes.text();
       return new Response(JSON.stringify({ error: `ElevenLabs error: ${errText}` }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const audioBytes = new Uint8Array(await ttsRes.arrayBuffer());
+    const audioBytes = new Uint8Array(await audioRes.arrayBuffer());
     const path = `${activity.id}/audio.mp3`;
 
     const { error: uploadErr } = await admin.storage
@@ -137,12 +160,15 @@ Deno.serve(async (req) => {
     const { data: pub } = admin.storage.from("activity-audio").getPublicUrl(path);
     const audioUrl = pub.publicUrl;
 
+    const usedModel =
+      audioRes === ttsRes ? modelId : "eleven_multilingual_v2";
+
     await admin
       .from("activities")
       .update({
         audio_url: audioUrl,
         audio_voice_id: voiceId,
-        audio_model_id: modelId,
+        audio_model_id: usedModel,
       })
       .eq("id", activity.id);
 
