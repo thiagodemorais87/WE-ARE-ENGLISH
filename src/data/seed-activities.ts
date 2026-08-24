@@ -15,8 +15,8 @@ const SHORT = {
   cafeEasy: 'https://www.youtube-nocookie.com/embed/v9EWItbdvVs',
   /** Airport / travel English short */
   airport: 'https://www.youtube-nocookie.com/embed/l3IC2r_k08U',
-  /** Ordering drinks & pastries (A2 dialogue) */
-  cafePastry: 'https://www.youtube-nocookie.com/embed/0gu3MSatfo4',
+  /** Ordering coffee A2 listening (oEmbed-verified replacement for dead 0gu3MSatfo4) */
+  cafePastry: 'https://www.youtube-nocookie.com/embed/1dxXd7JNu7g',
   /** Short lyric / song practice (≤5 min pop chorus focus) */
   musicFeel: 'https://www.youtube-nocookie.com/embed/e-ORhEE9VVg',
   /** Alternate short music practice */

@@ -135,7 +135,13 @@ export function MultiQuestionQuiz({
 }
 
 /** Known dead / non-embeddable IDs previously used in seeds (includes live streams) */
-const BROKEN_YOUTUBE_IDS = new Set(['yCQOj2LQ1to', '0VsyckzBTfE', 'rfscVS0vtbw', 'jfKfPfyJRdk'])
+const BROKEN_YOUTUBE_IDS = new Set([
+  'yCQOj2LQ1to',
+  '0VsyckzBTfE',
+  'rfscVS0vtbw',
+  'jfKfPfyJRdk',
+  '0gu3MSatfo4',
+])
 
 const SAFE_YOUTUBE_FALLBACK = 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE?rel=0&modestbranding=1'
 
