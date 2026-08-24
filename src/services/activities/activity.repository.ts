@@ -4,9 +4,23 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
 import type { Activity, ActivityType, CefrLevel, Difficulty } from '@/types/activity'
 import { mapActivityToInsert, mapRowToActivity, normalizeDifficultyFilter } from './activity.mapper'
 import type { Database, Json } from '@/lib/supabase/database.types'
+import { stripAnswerKeys } from '@/lib/security/stripAnswerKeys'
 
 type ActivityUpdate = Database['public']['Tables']['activities']['Update']
 
+async function shouldStripAnswers(): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false
+  const { data } = await supabase.rpc('is_staff')
+  return data !== true
+}
+
+function mapLocalForStudents(list: Activity[], strip: boolean): Activity[] {
+  if (!strip) return list
+  return list.map((a) => ({
+    ...a,
+    content: stripAnswerKeys(a.content as Record<string, unknown>),
+  }))
+}
 
 export type ActivityFilters = {
   query?: string
@@ -126,7 +140,8 @@ function mergeWithLocalSeeds(fromDb: Activity[], filters: ActivityFilters): Acti
 }
 
 export async function listActivitiesFromDb(filters: ActivityFilters = {}): Promise<Activity[]> {
-  const local = filterLocal(localCatalog(), filters)
+  const strip = await shouldStripAnswers()
+  const local = mapLocalForStudents(filterLocal(localCatalog(), filters), strip)
   if (!supabase || !isSupabaseConfigured) {
     return local
   }
@@ -153,7 +168,7 @@ export async function listActivitiesFromDb(filters: ActivityFilters = {}): Promi
       return local
     }
 
-    let list = (data ?? []).map(mapRowToActivity)
+    let list = (data ?? []).map((row) => mapRowToActivity(row, { stripAnswers: strip }))
     if (filters.duration && filters.duration !== 'all') {
       list = filterLocal(list, { duration: filters.duration, includeUnpublished: true })
     }
@@ -169,14 +184,23 @@ export async function listActivitiesFromDb(filters: ActivityFilters = {}): Promi
 }
 
 export async function getActivityFromDb(id: string): Promise<Activity | null> {
+  const strip = await shouldStripAnswers()
   if (!supabase || !isSupabaseConfigured) {
-    return localCatalog().find((a) => a.id === id) ?? null
+    const local = localCatalog().find((a) => a.id === id) ?? null
+    if (!local) return null
+    return strip
+      ? { ...local, content: stripAnswerKeys(local.content as Record<string, unknown>) }
+      : local
   }
   const { data, error } = await supabase.from('activities').select('*').eq('id', id).maybeSingle()
   if (error || !data) {
-    return localCatalog().find((a) => a.id === id) ?? null
+    const local = localCatalog().find((a) => a.id === id) ?? null
+    if (!local) return null
+    return strip
+      ? { ...local, content: stripAnswerKeys(local.content as Record<string, unknown>) }
+      : local
   }
-  return mapRowToActivity(data)
+  return mapRowToActivity(data, { stripAnswers: strip })
 }
 
 export async function createActivity(

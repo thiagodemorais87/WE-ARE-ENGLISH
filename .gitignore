@@ -11,9 +11,14 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Env — never commit secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+
+# Local DB backups (may contain full activity content)
+scripts/backups/
 
 # Editor directories and files
 .vscode/*

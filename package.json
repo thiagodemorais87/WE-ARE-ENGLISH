@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "test": "node --experimental-strip-types scripts/verify-activity-engine.mjs",
     "seed:sql": "node --experimental-strip-types scripts/generate-seed-sql.mjs",
-    "audio:generate": "node --experimental-strip-types scripts/generate-system-audio.mjs"
+    "audio:generate": "node --experimental-strip-types scripts/generate-system-audio.mjs",
+    "catalog:probe": "node --experimental-strip-types scripts/probe-system-activities.mjs",
+    "catalog:sync": "node --experimental-strip-types scripts/sync-curated-catalog.mjs",
+    "listening:from-backup": "node --experimental-strip-types scripts/generate-listening-from-backup.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

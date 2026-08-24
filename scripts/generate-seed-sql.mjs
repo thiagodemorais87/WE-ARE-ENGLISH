@@ -1,5 +1,8 @@
 import { writeFileSync } from 'node:fs'
-import { systemSeedActivities } from '../src/data/seed-activities.ts'
+import {
+  systemSeedActivities,
+  listeningAudioUrlByTitle,
+} from '../src/data/seed-activities.ts'
 import { toEngineDifficulty } from '../src/types/activity.ts'
 
 function esc(s) {
@@ -10,6 +13,10 @@ function rowSql(a) {
   const diff = toEngineDifficulty(a.difficulty)
   const content = JSON.stringify(a.content ?? {}).replace(/'/g, "''")
   const image = esc(a.thumbnail || a.imageUrl || '')
+  const audio =
+    a.type === 'listening' && listeningAudioUrlByTitle[a.title]
+      ? `'${esc(listeningAudioUrlByTitle[a.title])}'`
+      : 'null'
   return `(
   gen_random_uuid(),
   '${esc(a.title)}',
@@ -19,7 +26,7 @@ function rowSql(a) {
   '${diff}',
   '${esc(a.instructions ?? '')}',
   '${content}'::jsonb,
-  null,
+  ${audio},
   ${image ? `'${image}'` : 'null'},
   ${a.duration ?? 10},
   ${a.points ?? 10},
@@ -41,6 +48,8 @@ const insertCols = `insert into public.activities (
 
 const sql = `-- System activity seed (generated from src/data/seed-activities.ts)
 -- Regenerate: npm run seed:sql
+-- Prefer scripts/sync-curated-catalog.mjs on a live DB that already has ElevenLabs audio:
+-- that script updates listening in place (keeps ids + audio_url) instead of wipe+insert.
 -- Core engine types are inserted first so Listening/Writing/etc. still load even if
 -- media types (music/video/game) are rejected by an older CHECK constraint.
 

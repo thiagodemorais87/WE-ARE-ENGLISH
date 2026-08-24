@@ -88,6 +88,10 @@ export async function getOrStartAttempt(
   return startAttempt(activityId, userId)
 }
 
+/**
+ * Completes an attempt. With Supabase, score is computed server-side via RPC
+ * (client-provided score is ignored). Offline demo still uses local score.
+ */
 export async function completeAttempt(
   attemptId: string,
   payload: {
@@ -113,20 +117,49 @@ export async function completeAttempt(
     return list[idx]
   }
 
-  const { data, error } = await supabase
-    .from('activity_attempts')
-    .update({
-      answer: payload.answer as Json,
-      score: payload.score,
-      feedback: (payload.feedback ?? null) as Json | null,
-      completed_at: completedAt,
-    })
-    .eq('id', attemptId)
-    .select('*')
-    .single()
+  const { data, error } = await supabase.rpc('complete_activity_attempt', {
+    p_attempt_id: attemptId,
+    p_answer: payload.answer as Json,
+    p_feedback: (payload.feedback ?? null) as Json | null,
+  })
 
   if (error || !data) throw new Error(error?.message ?? 'Failed to complete attempt')
-  return mapAttempt(data)
+  return mapAttempt(data as Parameters<typeof mapAttempt>[0])
+}
+
+export async function checkQuizAnswer(
+  activityId: string,
+  questionIndex: number,
+  selectedIndex: number,
+): Promise<{
+  correct: boolean
+  correctIndex: number
+  explanation: string
+  correctOption: string
+}> {
+  if (!supabase || !isSupabaseConfigured) {
+    return {
+      correct: false,
+      correctIndex: -1,
+      explanation: '',
+      correctOption: '',
+    }
+  }
+
+  const { data, error } = await supabase.rpc('check_quiz_answer', {
+    p_activity_id: activityId,
+    p_question_index: questionIndex,
+    p_selected_index: selectedIndex,
+  })
+
+  if (error || !data) throw new Error(error?.message ?? 'Failed to check answer')
+  const d = data as Record<string, unknown>
+  return {
+    correct: Boolean(d.correct),
+    correctIndex: Number(d.correctIndex ?? -1),
+    explanation: String(d.explanation ?? ''),
+    correctOption: String(d.correctOption ?? ''),
+  }
 }
 
 export async function listAttemptsForUser(userId: string): Promise<ActivityAttempt[]> {

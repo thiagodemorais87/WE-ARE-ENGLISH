@@ -37,13 +37,15 @@ export function ActivityPlayPage() {
   const onComplete = useCallback(async (payload: ActivityCompletePayload) => {
     if (completedRef.current) return
     completedRef.current = true
-    setSavedScore(payload.score)
     if (attemptIdRef.current) {
       try {
-        await completeAttempt(attemptIdRef.current, payload)
+        const saved = await completeAttempt(attemptIdRef.current, payload)
+        setSavedScore(saved.score ?? payload.score)
       } catch {
-        /* ignore */
+        setSavedScore(payload.score)
       }
+    } else {
+      setSavedScore(payload.score)
     }
   }, [])
 

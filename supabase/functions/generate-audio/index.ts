@@ -1,47 +1,32 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeadersFor, jsonError, readJsonLimited } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const MAX_BODY = 32_000;
+const MAX_TTS_CHARS = 8_000;
 
 Deno.serve(async (req) => {
+  const cors = corsHeadersFor(req);
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors });
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!authHeader) return jsonError(401, "Unauthorized", cors);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const elevenKey = Deno.env.get("ELEVENLABS_API_KEY");
 
-    if (!elevenKey) {
-      return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!elevenKey) return jsonError(503, "Audio service unavailable", cors);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userError } = await userClient.auth.getUser();
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (userError || !userData.user) return jsonError(401, "Unauthorized", cors);
 
     const { data: profile } = await userClient
       .from("profiles")
@@ -50,18 +35,18 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonError(403, "Forbidden", cors);
     }
 
-    const body = (await req.json()) as { activityId?: string; regenerate?: boolean };
-    if (!body.activityId) {
-      return new Response(JSON.stringify({ error: "activityId required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let body: { activityId?: string; regenerate?: boolean };
+    try {
+      body = (await readJsonLimited(req, MAX_BODY)) as typeof body;
+    } catch {
+      return jsonError(413, "Payload too large", cors);
+    }
+
+    if (!body.activityId || typeof body.activityId !== "string") {
+      return jsonError(400, "activityId required", cors);
     }
 
     const admin = createClient(supabaseUrl, serviceKey);
@@ -71,28 +56,38 @@ Deno.serve(async (req) => {
       .eq("id", body.activityId)
       .single();
 
-    if (actErr || !activity) {
-      return new Response(JSON.stringify({ error: "Activity not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (actErr || !activity) return jsonError(404, "Activity not found", cors);
+
+    if (activity.is_system && profile.role !== "admin" && body.regenerate) {
+      return jsonError(403, "Forbidden", cors);
+    }
+    if (
+      !activity.is_system &&
+      activity.created_by !== userData.user.id &&
+      profile.role !== "admin"
+    ) {
+      return jsonError(403, "Forbidden", cors);
     }
 
     if (activity.audio_url && !body.regenerate) {
       return new Response(JSON.stringify({ audioUrl: activity.audio_url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...cors, "Content-Type": "application/json" },
       });
     }
 
     const content = (activity.content ?? {}) as Record<string, unknown>;
-    const text =
+    const text = String(
       (content.audioText as string) ||
-      (content.transcript as string) ||
-      (content.referenceText as string) ||
-      (content.text as string) ||
-      activity.title;
+        (content.transcript as string) ||
+        (content.referenceText as string) ||
+        (content.text as string) ||
+        activity.title ||
+        "",
+    ).slice(0, MAX_TTS_CHARS);
 
-    const voiceId = activity.audio_voice_id || "pNInz6obpgDQGcFmaJgB"; // Adam — clear US male
+    if (!text.trim()) return jsonError(400, "No speakable text", cors);
+
+    const voiceId = activity.audio_voice_id || "pNInz6obpgDQGcFmaJgB";
     const modelId = activity.audio_model_id || "eleven_turbo_v2_5";
 
     const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -114,7 +109,6 @@ Deno.serve(async (req) => {
       }),
     });
 
-    // Fallback if turbo model unavailable on the account
     let audioRes = ttsRes;
     if (!audioRes.ok && modelId === "eleven_turbo_v2_5") {
       audioRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -127,41 +121,34 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           text,
           model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: 0.45,
-            similarity_boost: 0.85,
-          },
+          voice_settings: { stability: 0.45, similarity_boost: 0.85 },
         }),
       });
     }
 
     if (!audioRes.ok) {
-      const errText = await audioRes.text();
-      return new Response(JSON.stringify({ error: `ElevenLabs error: ${errText}` }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("elevenlabs_failed", audioRes.status);
+      return jsonError(502, "Upstream audio error", cors);
     }
 
     const audioBytes = new Uint8Array(await audioRes.arrayBuffer());
-    const path = `${activity.id}/audio.mp3`;
+    if (audioBytes.byteLength > 5_000_000) {
+      return jsonError(502, "Upstream audio error", cors);
+    }
 
+    const path = `${activity.id}/audio.mp3`;
     const { error: uploadErr } = await admin.storage
       .from("activity-audio")
       .upload(path, audioBytes, { contentType: "audio/mpeg", upsert: true });
 
     if (uploadErr) {
-      return new Response(JSON.stringify({ error: uploadErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("storage_upload_failed");
+      return jsonError(500, "Upload failed", cors);
     }
 
     const { data: pub } = admin.storage.from("activity-audio").getPublicUrl(path);
     const audioUrl = pub.publicUrl;
-
-    const usedModel =
-      audioRes === ttsRes ? modelId : "eleven_multilingual_v2";
+    const usedModel = audioRes === ttsRes ? modelId : "eleven_multilingual_v2";
 
     await admin
       .from("activities")
@@ -173,12 +160,10 @@ Deno.serve(async (req) => {
       .eq("id", activity.id);
 
     return new Response(JSON.stringify({ audioUrl }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("generate_audio_error", e instanceof Error ? e.message : "unknown");
+    return jsonError(500, "Internal error", corsHeadersFor(req));
   }
 });

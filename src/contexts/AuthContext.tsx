@@ -16,6 +16,8 @@ type AuthContextValue = {
   user: AuthUser | null
   isAuthenticated: boolean
   loading: boolean
+  /** True when running without Supabase (local demo only). */
+  isOfflineDemo: boolean
   login: (email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>
   signup: (
     name: string,
@@ -62,9 +64,11 @@ async function loadProfile(userId: string, email: string, fallbackName: string):
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Hydrate immediately so ActivityCards don't flash the "create account" lock
-  // while Supabase session is still resolving.
-  const [user, setUser] = useState<AuthUser | null>(() => readStoredUser())
+  const offlineDemo = !isSupabaseConfigured || !supabase
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    offlineDemo ? readStoredUser() : null,
+  )
+  const [hasSession, setHasSession] = useState(false)
   const [loading, setLoading] = useState(isSupabaseConfigured)
 
   useEffect(() => {
@@ -89,11 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return
         setUser(profile)
         persistUser(profile)
-      } else if (!readStoredUser()) {
+        setHasSession(true)
+      } else {
         setUser(null)
+        persistUser(null)
+        setHasSession(false)
       }
-      // If we have a stored user but no session yet (e.g. email confirmation
-      // pending after signup), keep the stored user so the UI stays unlocked.
       if (mounted) setLoading(false)
     })
 
@@ -108,13 +113,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         )
         setUser(profile)
         persistUser(profile)
+        setHasSession(true)
         return
       }
-      // Only clear on explicit sign-out — never wipe a just-set user when
-      // getSession/onAuthStateChange races with signup (common with email confirm).
-      if (event === 'SIGNED_OUT') {
-        setUser(null)
-        persistUser(null)
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
+        if (!session) {
+          setUser(null)
+          persistUser(null)
+          setHasSession(false)
+        }
       }
     })
 
@@ -135,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       })
       if (error) return { ok: false as const, error: error.message }
-      if (data.user) {
+      if (data.user && data.session) {
         const profile = await loadProfile(
           data.user.id,
           data.user.email ?? email,
@@ -143,23 +150,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         )
         setUser(profile)
         persistUser(profile)
+        setHasSession(true)
       }
       return { ok: true as const }
     }
 
+    // Offline demo only (no Supabase env)
     await new Promise((r) => setTimeout(r, 400))
-    const existing = readStoredUser()
-    const next: AuthUser =
-      existing?.email === email.trim().toLowerCase()
-        ? { ...existing, role: existing.role ?? 'student' }
-        : {
-            id: crypto.randomUUID(),
-            name: email.split('@')[0] || 'Learner',
-            email: email.trim().toLowerCase(),
-            role: 'student',
-          }
+    const next: AuthUser = {
+      id: crypto.randomUUID(),
+      name: email.split('@')[0] || 'Learner',
+      email: email.trim().toLowerCase(),
+      role: 'student',
+    }
     persistUser(next)
     setUser(next)
+    setHasSession(true)
     return { ok: true as const }
   }, [])
 
@@ -182,10 +188,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           options: { data: { full_name: name.trim() } },
         })
         if (error) return { ok: false as const, error: error.message }
-        if (data.user) {
-          const profile = await loadProfile(data.user.id, data.user.email ?? email, name.trim())
+        if (data.session?.user) {
+          const profile = await loadProfile(data.user!.id, data.user!.email ?? email, name.trim())
           setUser(profile)
           persistUser(profile)
+          setHasSession(true)
+        } else {
+          // Email confirmation pending — not authenticated until session exists
+          setUser(null)
+          persistUser(null)
+          setHasSession(false)
         }
         return { ok: true as const }
       }
@@ -199,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       persistUser(next)
       setUser(next)
+      setHasSession(true)
       return { ok: true as const }
     },
     [],
@@ -208,20 +221,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (supabase) await supabase.auth.signOut()
     persistUser(null)
     setUser(null)
+    setHasSession(false)
   }, [])
+
+  const isAuthenticated = offlineDemo ? Boolean(user) : hasSession && Boolean(user)
 
   const value = useMemo(
     () => ({
       user,
-      isAuthenticated: Boolean(user),
+      isAuthenticated,
       loading,
+      isOfflineDemo: offlineDemo,
       login,
       signup,
       logout,
-      isTeacher: user?.role === 'teacher' || user?.role === 'admin',
-      isAdmin: user?.role === 'admin',
+      isTeacher: isAuthenticated && (user?.role === 'teacher' || user?.role === 'admin'),
+      isAdmin: isAuthenticated && user?.role === 'admin',
     }),
-    [user, loading, login, signup, logout],
+    [user, isAuthenticated, loading, offlineDemo, login, signup, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

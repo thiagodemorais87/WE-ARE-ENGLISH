@@ -42,10 +42,19 @@ RLS: aluno lê published; professora CRUD nas próprias (`is_system = false`); s
 
 Projeto (ref): ver `supabase/migrations/20260822140000_activity_engine.sql`.
 
-### Seed (~168 system activities)
+### Seed (~64 system activities)
 
-Fonte TS: `src/data/seed-activities.ts`  
+Fonte TS: `src/data/seed-activities.ts` (20 listening com áudio ElevenLabs + 5 por skill curada + mídia curta)  
 SQL: `supabase/seed.sql` (gere com `npm run seed:sql`)
+
+Em um banco que **já tem** áudios ElevenLabs, preferir sync (preserva `id`/`audio_url` dos listening):
+
+```bash
+npm run catalog:sync -- --dry-run
+npm run catalog:sync
+```
+
+Reinstall completo (wipe system + insert; inclui `audio_url` dos listening conhecidos):
 
 ```bash
 npm run seed:sql
@@ -55,13 +64,21 @@ psql "$DATABASE_URL" -f supabase/seed.sql
 
 ### Roles
 
-Promover professora:
+Admin oficial (produção): defina `ADMIN_EMAIL` / `ADMIN_PASSWORD` no `.env.local` (sem defaults no repo).
 
-```sql
-update public.profiles set role = 'teacher' where id = '<auth-user-uuid>';
+Purge + bootstrap (precisa de `SUPABASE_SERVICE_ROLE_KEY`):
+
+```bash
+node scripts/create-admin-user.mjs
 ```
 
-Admin UI: `/admin/activities` (TeacherRoute).
+Promover professor (somente admin autenticado, via RPC):
+
+```sql
+select public.admin_set_user_role('<user-uuid>', 'teacher');
+```
+
+Admin UI: `/admin/activities` (TeacherRoute — autorização real é RLS + role no banco).
 
 ## Edge Functions
 
@@ -93,12 +110,14 @@ Clients: `src/lib/integrations/elevenlabs.ts`, `src/lib/integrations/speechace.t
 Gera `audio_url` para activities de sistema `listening`/`reading` sem áudio:
 
 ```bash
-# .env.local (ou env do shell): SUPABASE_URL, SUPABASE_ANON_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
+# .env.local: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
+# Edge Function secret (must start with sk_ — not the key ID):
+#   npx supabase secrets set ELEVENLABS_API_KEY=sk_...
 npm run audio:generate
 npm run audio:generate -- --limit 10 --delay 1500
 ```
 
-Requer usuário teacher/admin e `ELEVENLABS_API_KEY` na Edge Function. Há rate-limit/custo por caractere — o play não bloqueia se o áudio ainda não existir (transcript fica disponível).
+Requer usuário teacher/admin e `ELEVENLABS_API_KEY` válida na Edge Function. Sem `audio_url`, o player usa a voz do navegador (qualidade varia por PC) — por isso uns ouvintes soam “normais” e outros “robóticos”.
 
 ## Testes críticos
 
@@ -106,7 +125,7 @@ Requer usuário teacher/admin e `ELEVENLABS_API_KEY` na Edge Function. Há rate-
 npm run test
 ```
 
-Valida ≥120 seeds, 12 tipos de engine (+ music/video/game), quizzes com ≥10 questões, helpers de difficulty e regras de edit/duplicate.
+Valida ~55–80 seeds curados, quizzes com 8–15 questões e ≥6 opções, fill_blank/pronunciation/criteria, e helpers de difficulty.
 
 ```bash
 npm run seed:sql

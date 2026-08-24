@@ -213,7 +213,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_staff: { Args: Record<string, never>; Returns: boolean }
+      check_quiz_answer: {
+        Args: {
+          p_activity_id: string
+          p_question_index: number
+          p_selected_index: number
+        }
+        Returns: Json
+      }
+      complete_activity_attempt: {
+        Args: {
+          p_attempt_id: string
+          p_answer: Json
+          p_feedback?: Json | null
+        }
+        Returns: Database['public']['Tables']['activity_attempts']['Row']
+      }
+      admin_set_user_role: {
+        Args: { target_user_id: string; new_role: string }
+        Returns: Database['public']['Tables']['profiles']['Row']
+      }
     }
     Enums: {
       [_ in never]: never

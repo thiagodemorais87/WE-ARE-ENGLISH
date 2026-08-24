@@ -1,24 +1,19 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeadersFor, jsonError, readJsonLimited } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const MAX_BODY = 64_000;
+const MAX_TEXT = 8_000;
 
 Deno.serve(async (req) => {
+  const cors = corsHeadersFor(req);
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors });
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!authHeader) return jsonError(401, "Unauthorized", cors);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -28,40 +23,23 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userError } = await userClient.auth.getUser();
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (userError || !userData.user) return jsonError(401, "Unauthorized", cors);
+
+    let body: { activityId?: string; text?: string };
+    try {
+      body = (await readJsonLimited(req, MAX_BODY)) as typeof body;
+    } catch {
+      return jsonError(413, "Payload too large", cors);
     }
 
-    const body = (await req.json()) as { activityId?: string; text?: string };
-    if (!body.text?.trim()) {
-      return new Response(JSON.stringify({ error: "text required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const text = String(body.text ?? "").trim();
+    if (!text) return jsonError(400, "text required", cors);
+    if (text.length > MAX_TEXT) return jsonError(413, "Payload too large", cors);
 
-    if (!speechaceKey) {
-      const words = body.text.trim().split(/\s+/).length;
-      return new Response(
-        JSON.stringify({
-          score: Math.min(100, 50 + Math.round(words / 3)),
-          cefr: "B1",
-          grammar: 70,
-          vocabulary: 72,
-          coherence: 68,
-          taskResponse: 75,
-          feedback: ["SPEECHACE_API_KEY not set — placeholder writing score."],
-          corrections: [],
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    if (!speechaceKey) return jsonError(503, "Scoring service unavailable", cors);
 
     const form = new FormData();
-    form.append("text", body.text);
+    form.append("text", text);
     form.append("key", speechaceKey);
     form.append("dialect", "en-us");
 
@@ -71,16 +49,13 @@ Deno.serve(async (req) => {
     });
 
     if (!scoreRes.ok) {
-      const errText = await scoreRes.text();
-      return new Response(JSON.stringify({ error: `Speechace error: ${errText}` }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("speechace_writing_failed", scoreRes.status);
+      return jsonError(502, "Upstream scoring error", cors);
     }
 
     const raw = (await scoreRes.json()) as Record<string, unknown>;
     const textScore = (raw.text_score ?? raw) as Record<string, unknown>;
-    const overall = Number(textScore.overall ?? textScore.score ?? 70);
+    const overall = Math.max(0, Math.min(100, Number(textScore.overall ?? textScore.score ?? 0)));
 
     return new Response(
       JSON.stringify({
@@ -93,12 +68,10 @@ Deno.serve(async (req) => {
         feedback: ["Scored via Speechace writing."],
         corrections: [],
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...cors, "Content-Type": "application/json" } },
     );
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("score_writing_error", e instanceof Error ? e.message : "unknown");
+    return jsonError(500, "Internal error", corsHeadersFor(req));
   }
 });

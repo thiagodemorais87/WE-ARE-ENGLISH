@@ -11,7 +11,10 @@ function normalizeAnswer(value: string): string {
 function isCorrect(item: FillBlankItem, value: string): boolean {
   const got = normalizeAnswer(value)
   if (!got) return false
-  const accepted = [item.answer, ...(item.alternatives ?? [])].map(normalizeAnswer)
+  // Short lists = accepted synonyms; long lists (≥5) = MC distractors (not scored).
+  const alts = item.alternatives ?? []
+  const synonyms = alts.length >= 5 ? [] : alts
+  const accepted = [item.answer, ...synonyms].map(normalizeAnswer)
   return accepted.includes(got)
 }
 

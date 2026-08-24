@@ -90,6 +90,8 @@ export interface WritingContent {
   maxWords: number
   taskType: 'short' | 'chat' | 'essay'
   sampleAnswer?: string
+  /** Checklist used for self-review / scoring hints */
+  criteria?: string[]
 }
 
 export interface SpeakingContent {
@@ -104,6 +106,8 @@ export interface SpeakingContent {
     vocabulary: boolean
     coherence: boolean
   }
+  /** Checklist used for self-review / scoring hints */
+  criteria?: string[]
 }
 
 export interface QuizQuestionItem {
@@ -197,6 +201,8 @@ export interface PronunciationContent {
   tips?: string
   /** Sound or pattern focus, e.g. "TH sound" */
   focus?: string
+  /** Multi-phrase practice set (5–8 items preferred) */
+  items?: { text: string; tips?: string; focus?: string }[]
 }
 
 export type ActivityContent =

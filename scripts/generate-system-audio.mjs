@@ -126,6 +126,21 @@ for (const row of targets) {
   if (!res.ok) {
     console.log(`FAIL ${res.status} ${body.error ?? ''}`)
     fail += 1
+    const errText = String(body.error ?? '')
+    if (
+      res.status === 502 &&
+      (errText.includes('invalid_api_key') ||
+        errText.includes('authentication_error') ||
+        errText.includes('API key'))
+    ) {
+      console.error(
+        '\nAborting: ElevenLabs API key on Edge Function is invalid.\n' +
+          'Set a real key (starts with sk_) as secret ELEVENLABS_API_KEY, then re-run:\n' +
+          '  npx supabase secrets set ELEVENLABS_API_KEY=sk_...\n' +
+          '  npm run audio:generate\n',
+      )
+      break
+    }
   } else {
     console.log(`OK ${body.audioUrl ? '→ url set' : ''}`)
     ok += 1

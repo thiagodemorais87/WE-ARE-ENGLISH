@@ -1,12 +1,14 @@
 import type { Activity, ActivityContent, ActivityDifficulty, ActivityLevel, ActivityType, Difficulty } from '@/types/activity'
 import { toLegacyDifficulty } from '@/types/activity'
 import type { Database, Json } from '@/lib/supabase/database.types'
+import { stripAnswerKeys } from '@/lib/security/stripAnswerKeys'
 
 type ActivityRow = Database['public']['Tables']['activities']['Row']
 type ActivityInsert = Database['public']['Tables']['activities']['Insert']
 
-export function mapRowToActivity(row: ActivityRow): Activity {
+export function mapRowToActivity(row: ActivityRow, opts?: { stripAnswers?: boolean }): Activity {
   const engineDiff = row.difficulty as ActivityDifficulty
+  const rawContent = (row.content ?? {}) as ActivityContent
   return {
     id: row.id,
     title: row.title,
@@ -17,7 +19,7 @@ export function mapRowToActivity(row: ActivityRow): Activity {
     duration: row.duration,
     thumbnail: row.image_url || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
     instructions: row.instructions,
-    content: (row.content ?? {}) as ActivityContent,
+    content: opts?.stripAnswers ? stripAnswerKeys(rawContent) : rawContent,
     audioUrl: row.audio_url,
     imageUrl: row.image_url,
     points: row.points,
