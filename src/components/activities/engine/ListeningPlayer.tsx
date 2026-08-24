@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 type Props = {
   src?: string | null
-  /** Spoken when there is no audio file (Web Speech API). */
+  /** Spoken only when there is no audio file (Web Speech API). */
   speakText?: string | null
   title?: string
 }
@@ -45,6 +45,12 @@ function formatTime(s: number) {
   return `${m}:${sec.toString().padStart(2, '0')}`
 }
 
+function isAutoplayBlocked(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const name = 'name' in err ? String((err as { name?: string }).name) : ''
+  return name === 'NotAllowedError' || name === 'AbortError'
+}
+
 export function ListeningPlayer({ src, speakText, title }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
@@ -59,12 +65,14 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
   const [volume, setVolume] = useState(1)
   const [speed, setSpeed] = useState(1)
   const [ttsSupported, setTtsSupported] = useState(false)
-  /** When remote MP3 fails, fall back to browser TTS. */
+  /** Load/decode failure — never switches to TTS when src exists. */
   const [fileBroken, setFileBroken] = useState(false)
+  const [playBlocked, setPlayBlocked] = useState(false)
 
   const text = speakText?.trim() || ''
-  const useFile = Boolean(src) && !fileBroken
-  const useTts = !useFile && Boolean(text) && ttsSupported
+  const hasSrc = Boolean(src)
+  const useFile = hasSrc && !fileBroken
+  const useTts = !hasSrc && Boolean(text) && ttsSupported
   const canPlay = useFile || useTts
 
   const stopTtsTick = () => {
@@ -80,14 +88,13 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       const elapsed = (Date.now() - ttsStartRef.current) / 1000
       const next = Math.min(estimated, elapsed + ttsPausedAtRef.current)
       setProgress(next)
-      if (next >= estimated - 0.05) {
-        stopTtsTick()
-      }
+      if (next >= estimated - 0.05) stopTtsTick()
     }, 100)
   }
 
   useEffect(() => {
     setFileBroken(false)
+    setPlayBlocked(false)
   }, [src])
 
   useEffect(() => {
@@ -113,8 +120,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       if (!useFile) setDuration(0)
       return
     }
-    const rate = 0.95 * speed
-    setDuration(estimateTtsDurationSeconds(text, rate))
+    setDuration(estimateTtsDurationSeconds(text, 0.95 * speed))
   }, [text, speed, useTts, useFile])
 
   useEffect(() => {
@@ -137,6 +143,18 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       utteranceRef.current = null
     }
   }, [])
+
+  const retryFile = () => {
+    setFileBroken(false)
+    setPlayBlocked(false)
+    setProgress(0)
+    setPlaying(false)
+    // Keep <audio> mounted when broken so reload works immediately
+    const el = audioRef.current
+    if (el) {
+      el.load()
+    }
+  }
 
   const finishTts = () => {
     stopTtsTick()
@@ -196,23 +214,29 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
     startTtsTick(estimated)
   }
 
-  const onFileError = () => {
+  const onFileMediaError = () => {
     setPlaying(false)
     setFileBroken(true)
   }
 
   const toggle = async () => {
-    if (useFile) {
+    if (hasSrc) {
+      if (fileBroken) return
       const el = audioRef.current
       if (!el || !src) return
       if (!el.paused) {
         el.pause()
         return
       }
+      setPlayBlocked(false)
       try {
         await el.play()
-      } catch {
-        onFileError()
+      } catch (err) {
+        if (isAutoplayBlocked(err)) {
+          setPlayBlocked(true)
+          return
+        }
+        onFileMediaError()
       }
       return
     }
@@ -233,7 +257,6 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       } catch {
         /* ignore */
       }
-      // Chrome often ignores pause — cancel and resume from approx position later
       if (!window.speechSynthesis.paused && window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel()
         utteranceRef.current = null
@@ -263,14 +286,20 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
   }
 
   const replay = async () => {
-    if (useFile) {
+    if (hasSrc) {
+      if (fileBroken) return
       const el = audioRef.current
       if (!el || !src) return
+      setPlayBlocked(false)
       try {
         el.currentTime = 0
         await el.play()
-      } catch {
-        onFileError()
+      } catch (err) {
+        if (isAutoplayBlocked(err)) {
+          setPlayBlocked(true)
+          return
+        }
+        onFileMediaError()
       }
       return
     }
@@ -302,34 +331,56 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
       {title ? <p className="mb-2 text-sm font-medium text-fg">{title}</p> : null}
       {useFile ? (
         <p className="mb-3 text-xs text-fg-muted">Listen · native audio</p>
+      ) : hasSrc && fileBroken ? (
+        <div className="mb-3 space-y-2">
+          <p className="text-xs text-fg-muted">Audio file unavailable</p>
+          <p className="text-xs text-amber-700 dark:text-amber-200/90">
+            Native audio failed to load. Try again — we will not switch to the browser voice.
+          </p>
+          <button
+            type="button"
+            onClick={retryFile}
+            className="rounded-full border border-edge px-3 py-1.5 text-xs text-fg-muted"
+          >
+            Try again
+          </button>
+        </div>
       ) : useTts ? (
         <div className="mb-3 space-y-1">
-          <p className="text-xs text-fg-muted">
-            {fileBroken
-              ? 'Audio file unavailable · browser voice'
-              : 'Listen · browser voice'}
-          </p>
+          <p className="text-xs text-fg-muted">Listen · browser voice</p>
           <p className="text-xs text-amber-700 dark:text-amber-200/90">
-            {fileBroken
-              ? 'Native audio failed to load. Quality depends on your browser’s built-in voice.'
-              : 'Native audio is not available yet. Quality depends on your browser’s built-in voice.'}
+            Native audio is not available yet. Quality depends on your browser’s built-in voice.
           </p>
         </div>
       ) : null}
-      {useFile ? (
+      {playBlocked ? (
+        <p className="mb-3 text-xs text-amber-700 dark:text-amber-200/90">
+          Playback was blocked by the browser. Press Play again.
+        </p>
+      ) : null}
+      {hasSrc ? (
         <audio
           ref={audioRef}
           src={src ?? undefined}
-          preload="metadata"
-          onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
-          onPlay={() => setPlaying(true)}
+          preload="auto"
+          onTimeUpdate={(e) => {
+            if (!fileBroken) setProgress(e.currentTarget.currentTime)
+          }}
+          onLoadedMetadata={(e) => {
+            setDuration(e.currentTarget.duration || 0)
+            setFileBroken(false)
+          }}
+          onPlay={() => {
+            setPlaying(true)
+            setPlayBlocked(false)
+            setFileBroken(false)
+          }}
           onPause={() => setPlaying(false)}
           onEnded={() => {
             setPlaying(false)
             setProgress(0)
           }}
-          onError={onFileError}
+          onError={onFileMediaError}
         />
       ) : null}
       <div className="flex flex-wrap items-center gap-3">
@@ -367,7 +418,9 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
             </p>
           </div>
         ) : (
-          <div className="min-w-[10rem] flex-1 text-xs text-fg-muted">No playable audio</div>
+          <div className="min-w-[10rem] flex-1 text-xs text-fg-muted">
+            {hasSrc && fileBroken ? 'Fix audio to play' : 'No playable audio'}
+          </div>
         )}
         <label className="flex items-center gap-2 text-xs text-fg-muted">
           Vol
@@ -403,7 +456,7 @@ export function ListeningPlayer({ src, speakText, title }: Props) {
           </select>
         </label>
       </div>
-      {!canPlay ? (
+      {!canPlay && !(hasSrc && fileBroken) ? (
         <p className="mt-3 text-xs text-amber-700 dark:text-amber-200/90">
           Audio is not available for this activity yet.
         </p>

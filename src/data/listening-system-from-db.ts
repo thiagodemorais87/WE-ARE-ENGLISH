@@ -32,7 +32,7 @@ export const listeningAudioUrlByTitle: Record<string, string> = {
 }
 
 export function buildListeningFromDbActivities(): Activity[] {
-  return [
+  const activities: Activity[] = [
     {
       id: "sys-listen-my-name-is",
       title: "My Name Is",
@@ -3074,4 +3074,8 @@ export function buildListeningFromDbActivities(): Activity[] {
       },
     }
   ]
+  return activities.map((a) => ({
+    ...a,
+    audioUrl: a.audioUrl ?? listeningAudioUrlByTitle[a.title] ?? null,
+  }))
 }

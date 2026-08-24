@@ -599,6 +599,7 @@ function main() {
       if (qq.correctIndex < 0 || qq.correctIndex >= 6) throw new Error(`${title}: bad correctIndex`)
     }
 
+    const audioUrlLiteral = row.audio_url ? esc(row.audio_url) : 'null'
     activityBlocks.push(`    {
       id: ${esc(id)},
       title: ${esc(title)},
@@ -614,6 +615,7 @@ function main() {
       categoryTags: ['system', 'listening'],
       isPublished: true,
       isSystem: true,
+      audioUrl: ${audioUrlLiteral},
       content: {
         subtype: 'comprehension',
         audioText: ${esc(audioText)},
@@ -644,9 +646,13 @@ ${audioEntries}
 }
 
 export function buildListeningFromDbActivities(): Activity[] {
-  return [
+  const activities: Activity[] = [
 ${activityBlocks.join(',\n')}
   ]
+  return activities.map((a) => ({
+    ...a,
+    audioUrl: a.audioUrl ?? listeningAudioUrlByTitle[a.title] ?? null,
+  }))
 }
 `
 

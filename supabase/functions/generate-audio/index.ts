@@ -90,7 +90,12 @@ Deno.serve(async (req) => {
     const voiceId = activity.audio_voice_id || "pNInz6obpgDQGcFmaJgB";
     const modelId = activity.audio_model_id || "eleven_turbo_v2_5";
 
-    const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    // Pin bitrate/sample rate so MP3 sounds the same in Chrome, Brave, Safari, etc.
+    const OUTPUT_FORMAT = "mp3_44100_128";
+    const ttsUrl = (id: string) =>
+      `https://api.elevenlabs.io/v1/text-to-speech/${id}?output_format=${OUTPUT_FORMAT}`;
+
+    const ttsRes = await fetch(ttsUrl(voiceId), {
       method: "POST",
       headers: {
         "xi-api-key": elevenKey,
@@ -111,7 +116,7 @@ Deno.serve(async (req) => {
 
     let audioRes = ttsRes;
     if (!audioRes.ok && modelId === "eleven_turbo_v2_5") {
-      audioRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      audioRes = await fetch(ttsUrl(voiceId), {
         method: "POST",
         headers: {
           "xi-api-key": elevenKey,

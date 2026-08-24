@@ -1,5 +1,5 @@
 import { activities as mockCatalog } from '@/data/activities'
-import { systemSeedActivities } from '@/data/seed-activities'
+import { listeningAudioUrlByTitle, systemSeedActivities } from '@/data/seed-activities'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
 import type { Activity, ActivityType, CefrLevel, Difficulty } from '@/types/activity'
 import { mapActivityToInsert, mapRowToActivity, normalizeDifficultyFilter } from './activity.mapper'
@@ -47,10 +47,14 @@ function localCatalog(): Activity[] {
     return true
   })
   for (const a of [...mocks, ...systemSeedActivities]) {
-    const key = catalogKey(a)
+    const withAudio: Activity =
+      a.type === 'listening' && !a.audioUrl
+        ? { ...a, audioUrl: listeningAudioUrlByTitle[a.title] ?? a.audioUrl ?? null }
+        : a
+    const key = catalogKey(withAudio)
     const existing = byKey.get(key)
-    if (!existing || a.id.startsWith('sys-')) {
-      byKey.set(key, a)
+    if (!existing || withAudio.id.startsWith('sys-')) {
+      byKey.set(key, withAudio)
     }
   }
   return [...byKey.values()]
