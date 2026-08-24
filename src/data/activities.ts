@@ -121,6 +121,32 @@ export const activities: Activity[] = [
       correctIndex: 0,
       questions: [
         {
+          question: 'What is the best main idea of the guide?',
+          options: [
+            'Tips for enjoying Riverside in one day',
+            'How to build a bridge',
+            'Airport rules in Riverside',
+            'A restaurant menu only',
+          ],
+          correctIndex: 0,
+          explanation: 'The text suggests places and times to visit, like a short city guide.',
+        },
+        {
+          question: 'When should you visit the old bridge?',
+          options: ['In the morning', 'At midnight only', 'Never', 'Only in winter'],
+          correctIndex: 0,
+        },
+        {
+          question: 'Where can you try local coffee?',
+          options: ['Near the market', 'On the bridge roof', 'At the airport gate', 'Under the river'],
+          correctIndex: 0,
+        },
+        {
+          question: 'When is a good time to walk along the river?',
+          options: ['At sunset', 'Before sunrise only', 'During a storm only', 'Never mentioned'],
+          correctIndex: 0,
+        },
+        {
           question: 'When are museums free?',
           options: [
             'The first Sunday of each month',
@@ -129,10 +155,16 @@ export const activities: Activity[] = [
             'Never',
           ],
           correctIndex: 0,
+          explanation: 'The last sentence states museums are free on the first Sunday of each month.',
         },
         {
-          question: 'What should you try near the market?',
-          options: ['Local coffee', 'Ski lessons', 'Boat engines', 'Airport taxis'],
+          question: '“Local coffee” most likely means coffee that is…',
+          options: [
+            'Typical of the area / nearby cafés',
+            'Only from another country',
+            'Frozen forever',
+            'Free for pilots only',
+          ],
           correctIndex: 0,
         },
       ],
@@ -170,6 +202,42 @@ export const activities: Activity[] = [
             'She finish her homework yesterday already.',
           ],
           correctIndex: 0,
+          explanation: 'She + has + past participle.',
+        },
+        {
+          question: '“I _____ three countries this year.”',
+          options: ['have visited', 'visited always yesterday only', 'am visit', 'visiting'],
+          correctIndex: 0,
+          explanation: 'Unfinished time (this year) → present perfect.',
+        },
+        {
+          question: 'Which word fits? “He hasn’t called _____.”',
+          options: ['yet', 'ago', 'yesterday night forever', 'last year only as past'],
+          correctIndex: 0,
+          explanation: 'Yet is common with negative present perfect.',
+        },
+        {
+          question: '“We have lived here _____ 2019.”',
+          options: ['since', 'for 2019', 'ago', 'at'],
+          correctIndex: 0,
+          explanation: 'Since + starting point; for + period.',
+        },
+        {
+          question: 'Finished time yesterday → choose past simple:',
+          options: [
+            'She closed the shop yesterday.',
+            'She has closed the shop yesterday.',
+            'She have closed yesterday.',
+            'She closing the shop yesterday.',
+          ],
+          correctIndex: 0,
+          explanation: 'Specific finished time (yesterday) uses past simple.',
+        },
+        {
+          question: '“_____ you ever tried sushi?”',
+          options: ['Have', 'Did you ever tried', 'Are', 'Do'],
+          correctIndex: 0,
+          explanation: 'Have you ever + past participle.',
         },
       ],
     },
@@ -193,8 +261,39 @@ export const activities: Activity[] = [
       correctIndex: 0,
       questions: [
         {
+          question: 'What do you show at the gate before boarding?',
+          options: ['Boarding pass', 'Hotel pillow', 'Only a shopping bag', 'A museum ticket'],
+          correctIndex: 0,
+          explanation: 'The boarding pass lets you get on the plane.',
+        },
+        {
           question: 'A place to sleep when you travel is a…',
-          options: ['hotel', 'passport', 'gate', 'ticket'],
+          options: ['hotel', 'passport', 'gate', 'runway'],
+          correctIndex: 0,
+        },
+        {
+          question: 'Where do bags arrive after a flight?',
+          options: ['Baggage claim', 'Classroom', 'Kitchen', 'Library'],
+          correctIndex: 0,
+        },
+        {
+          question: '“Departure” means…',
+          options: ['Leaving / taking off', 'Arriving forever', 'Eating lunch', 'Sleeping'],
+          correctIndex: 0,
+        },
+        {
+          question: 'The document with your photo for international travel is a…',
+          options: ['passport', 'napkin', 'boarding stub only', 'keychain'],
+          correctIndex: 0,
+        },
+        {
+          question: 'A “window seat” is…',
+          options: [
+            'Next to the window on the plane',
+            'In the airport bathroom',
+            'Outside the terminal forever',
+            'A café chair only',
+          ],
           correctIndex: 0,
         },
       ],
@@ -275,10 +374,42 @@ export const activities: Activity[] = [
           question: 'When did the park open?',
           options: ['Monday', 'Friday', 'Last year only', 'Never'],
           correctIndex: 0,
+          explanation: 'The first sentence says it opened on Monday.',
         },
         {
-          question: 'What is included in the park?',
-          options: ['Bike paths and picnic areas', 'An airport', 'A stadium only', 'A shopping mall'],
+          question: 'How much did the project cost?',
+          options: ['Two million dollars', 'Two hundred dollars', 'Nothing', 'Unknown forever'],
+          correctIndex: 0,
+        },
+        {
+          question: 'Which facilities are mentioned?',
+          options: [
+            'Bike paths, picnic areas, and free Wi-Fi',
+            'An airport and a stadium only',
+            'A shopping mall only',
+            'None',
+          ],
+          correctIndex: 0,
+        },
+        {
+          question: '“Local residents say…” is mainly…',
+          options: [
+            'An opinion / expectation',
+            'A proven scientific law',
+            'A flight number',
+            'A menu item',
+          ],
+          correctIndex: 0,
+          explanation: '“Say” introduces what people believe, not a measured fact in the text.',
+        },
+        {
+          question: 'What do residents expect the park to improve?',
+          options: ['Weekend tourism', 'Airplane speed', 'School exams', 'Ocean tides'],
+          correctIndex: 0,
+        },
+        {
+          question: 'Where is the new park?',
+          options: ['By the river (riverside)', 'On the moon', 'Inside a plane', 'Under the sea only'],
           correctIndex: 0,
         },
       ],
@@ -307,13 +438,42 @@ export const activities: Activity[] = [
       correctIndex: 0,
       questions: [
         {
-          question: 'Which sentence is correct?',
+          question: 'First conditional — choose the correct sentence:',
           options: [
-            'If I were you, I would study more.',
-            'If I was you, I will study more.',
-            'If I am you, I study more.',
-            'If I be you, I studied more.',
+            'If it rains, we will stay inside.',
+            'If it rains, we stay will inside.',
+            'If it will rain, we stay inside.',
+            'If rains it, we will stay.',
           ],
+          correctIndex: 0,
+          explanation: 'If + present, will + verb.',
+        },
+        {
+          question: 'Second conditional — “If I _____ you, I would study more.”',
+          options: ['were', 'am', 'be', 'will be'],
+          correctIndex: 0,
+          explanation: 'If I were you… is the standard form.',
+        },
+        {
+          question: 'Zero conditional (facts): “If you heat ice, it _____.”',
+          options: ['melts', 'will melted', 'melted always yesterday', 'melting'],
+          correctIndex: 0,
+        },
+        {
+          question: '“Unless she _____, we can’t publish.”',
+          options: ['approves', 'approve', 'will approve', 'approving'],
+          correctIndex: 0,
+          explanation: 'Unless = if not; use present here.',
+        },
+        {
+          question: '“If we had left earlier, we _____ the train.”',
+          options: ['would have caught', 'will catch', 'catch', 'are catching'],
+          correctIndex: 0,
+          explanation: 'Third conditional: if + past perfect, would have + past participle.',
+        },
+        {
+          question: 'Mixed idea — past condition, present result: “If I had slept more, I _____ tired now.”',
+          options: ["wouldn't be", "won't be", "am not being forever", "wasn't be"],
           correctIndex: 0,
         },
       ],
@@ -338,8 +498,36 @@ export const activities: Activity[] = [
       correctIndex: 0,
       questions: [
         {
+          question: '“Give up” usually means…',
+          options: ['Stop trying', 'Start running', 'Buy something', 'Wake up'],
+          correctIndex: 0,
+          explanation: 'Give up = quit / stop trying.',
+        },
+        {
           question: '“Look after” means…',
           options: ['Take care of', 'Look for keys only', 'Look up a word', 'Look away'],
+          correctIndex: 0,
+        },
+        {
+          question: 'Please _____ the form before Friday.',
+          options: ['fill in', 'fill under', 'fill off', 'fill away'],
+          correctIndex: 0,
+          explanation: 'Fill in a form = complete it.',
+        },
+        {
+          question: 'The meeting was _____ until next week.',
+          options: ['put off', 'put under', 'put eating', 'put sky'],
+          correctIndex: 0,
+          explanation: 'Put off = postpone.',
+        },
+        {
+          question: 'I’ll _____ you tomorrow about the tickets.',
+          options: ['call back', 'call under', 'call off to', 'call into pizza'],
+          correctIndex: 0,
+        },
+        {
+          question: '_____ the lights when you leave.',
+          options: ['Turn off', 'Turn under', 'Turn of', 'Turn into'],
           correctIndex: 0,
         },
       ],
